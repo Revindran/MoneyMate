@@ -1,0 +1,265 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+// ignore: must_be_immutable
+class NotesDetails extends StatefulWidget {
+  DocumentSnapshot snapData;
+
+  NotesDetails({Key key, @required this.snapData}) : super(key: key);
+
+  @override
+  _NotesDetailsState createState() => _NotesDetailsState();
+}
+
+DateTime dateTime = DateTime.now();
+String yyMMdd = dateTime.toIso8601String().split('T').first;
+var fire = FirebaseFirestore.instance;
+var note = fire
+    .collection('Users')
+    .doc(FirebaseAuth.instance.currentUser.email)
+    .collection('Notes');
+
+class _NotesDetailsState extends State<NotesDetails> {
+  bool _isEditingText = false;
+  TextEditingController _titleController, _noteController;
+  String titleText;
+  String noteText;
+  String docID;
+  String createdDate;
+  String updatedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    titleText = widget.snapData['title'] ?? "N/A";
+    noteText = widget.snapData['Note'] ?? "N/A";
+    createdDate = widget.snapData['created'] ?? "N/A";
+    updatedDate = widget.snapData['updated'] ?? "N/A";
+    docID = widget.snapData.id;
+    _titleController = TextEditingController(text: titleText);
+    _noteController = TextEditingController(text: noteText);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+//
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text('$titleText'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              CupertinoIcons.delete_solid,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              _deleteNote();
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              CupertinoIcons.doc_on_doc,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              // do something
+            },
+          )
+        ],
+      ),
+      body: Container(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Created: $createdDate"),
+                  updatedDate == ""
+                      ? Text("LastUpdated: -")
+                      : Text("LastUpdated: $updatedDate"),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 10,
+                bottom: 5,
+              ),
+              child: Container(
+                width: MediaQuery.of(context).size.width / 1.05,
+                decoration: BoxDecoration(
+                    color: Colors.amberAccent,
+                    borderRadius: BorderRadius.circular(20)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _editTitleTextField(),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 10,
+                bottom: 5,
+              ),
+              child: Container(
+                width: MediaQuery.of(context).size.width / 1.05,
+                decoration: BoxDecoration(
+                    color: Colors.amberAccent,
+                    borderRadius: BorderRadius.circular(20)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _editNoteTextField(),
+                ),
+              ),
+            ),
+            titleText == _titleController.text &&
+                    noteText == _noteController.text
+                ? _nonUpdateText()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 10,
+                          bottom: 5,
+                        ),
+                        child: GestureDetector(
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.amberAccent,
+                                borderRadius: BorderRadius.circular(20)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text("Update"),
+                            ),
+                          ),
+                          onTap: () {
+                            _updateNote();
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 10,
+                          bottom: 5,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.amberAccent,
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text('Cancel'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _editTitleTextField() {
+    if (_isEditingText)
+      return TextField(
+        keyboardType: TextInputType.multiline,
+        minLines: 1,
+        maxLines: null,
+        onSubmitted: (newValue) {
+          setState(() {
+            titleText = newValue;
+            _isEditingText = false;
+          });
+        },
+        autofocus: true,
+        controller: _titleController,
+      );
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isEditingText = true;
+        });
+      },
+      child: Text(
+        titleText,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _editNoteTextField() {
+    if (_isEditingText)
+      return TextField(
+        keyboardType: TextInputType.multiline,
+        minLines: 1,
+        maxLines: null,
+        onSubmitted: (newValue) {
+          setState(() {
+            noteText = newValue;
+            _isEditingText = false;
+          });
+        },
+        autofocus: true,
+        controller: _noteController,
+      );
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _isEditingText = true;
+        });
+      },
+      child: Text(
+        noteText,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 18.0,
+        ),
+      ),
+    );
+  }
+
+  void _deleteNote() {
+    note.doc(docID).delete().then((value) {
+      Navigator.pop(context);
+      Fluttertoast.showToast(
+        msg: "The Note has deleted successfully",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
+    });
+  }
+
+  void _updateNote() {
+    note.doc(docID).update({
+      "Note": _noteController.text,
+      "title": _titleController.text,
+      "updated": yyMMdd
+    }).then((value) {
+      Fluttertoast.showToast(msg: 'Updated Successful');
+    });
+  }
+
+  Widget _nonUpdateText() {
+    return Center(
+      child: Text('Change Something to Update'),
+    );
+  }
+}
