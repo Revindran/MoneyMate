@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:money_mate/Components/bottombar.dart';
 import 'package:money_mate/Screens/Auth/signup_screen.dart';
-import 'package:money_mate/Components/bottom_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatefulWidget {
@@ -17,6 +18,8 @@ class _SignInPageState extends State<SignInPage> {
   String _password;
 
   bool _isLoading = false;
+
+  var storage = GetStorage();
 
   @override
   void initState() {
@@ -193,14 +196,8 @@ class _SignInPageState extends State<SignInPage> {
 
   void _validateAndAuth() {
     if (_email.isEmpty || _password.isEmpty) {
-      Fluttertoast.showToast(
-          msg: "Please Fill all the fields to upload",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.blue,
-          textColor: Colors.white,
-          fontSize: 16.0);
+      Get.snackbar('Please Fill all the fields..',
+          'Please Fill all the fields...',duration: Duration(seconds: 3),snackPosition: SnackPosition.BOTTOM,);
     } else {
       setState(() {
         _isLoading = true;
@@ -211,52 +208,35 @@ class _SignInPageState extends State<SignInPage> {
 
   void _authUser() async {
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
+      FirebaseAuth.instance
           .signInWithEmailAndPassword(email: _email, password: _password)
-          .then(
-        (result) async {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('email', _email);
-          return null;
+          .then( (result) {
+            setState(() async {
+              Get.snackbar(
+                  'User Signing Successful..', 'User Signing Successfully Completed',
+                  snackPosition: SnackPosition.BOTTOM,
+                  duration: Duration(seconds: 3),
+                  backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+                  colorText: Get.theme.snackBarTheme.actionTextColor);
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              prefs.setString('email', _email);
+              storage.write('email', _email);
+              Get.offAll(()=>NewBottomBar());
+            });
+
         },
-      ).then((value) => Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => BottomBar())));
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        setState(() {
-          _isLoading = false;
-        });
-        Fluttertoast.showToast(
-            msg: "No user found for that email.",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.blue,
-            textColor: Colors.white,
-            fontSize: 16.0);
-        print('No user found for that email.');
-        setState(() {
-          _isLoading = false;
-        });
-      } else if (e.code == 'wrong-password') {
-        Fluttertoast.showToast(
-            msg: "Wrong password provided for that user.",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.blue,
-            textColor: Colors.white,
-            fontSize: 16.0);
-        print('Wrong password provided for that user.');
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      );
+    } catch (error) {
+      Get.snackbar(
+          'Sign In Error', 'Login failed: email or password incorrect.',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: Duration(seconds: 7),
+          backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+          colorText: Get.theme.snackBarTheme.actionTextColor);
       setState(() {
         _isLoading = false;
       });
-      print(e);
+      print(error);
     }
   }
 }

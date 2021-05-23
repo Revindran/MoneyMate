@@ -24,58 +24,56 @@ class _AddNotesPageState extends State<AddNotesPage> {
         title: Text('Add a New Note'),
         centerTitle: true,
       ),
-      body: Center(
-        child: Column(
-          children: [
-            TextFormField(
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(), labelText: 'Title'),
-              validator: (value) {
-                return (value == null ? 'Please Give the Heading ' : null);
-              },
-              keyboardType: TextInputType.text,
-              textCapitalization: TextCapitalization.sentences,
-              autocorrect: true,
-              onChanged: (val) {
-                titleText = val;
-              },
-            ),
-            TextFormField(
-              decoration: InputDecoration(
-                  border: UnderlineInputBorder(), labelText: 'Add Note'),
-              validator: (value) {
-                return (value.isEmpty ? 'Please Add some Note to save ' : null);
-              },
-              keyboardType: TextInputType.text,
-              textCapitalization: TextCapitalization.sentences,
-              autocorrect: true,
-              onChanged: (val) {
-                noteText = val;
-              },
-            ),
-            Row(
-              children: [
-                TextButton(
-                    onPressed: () {
-                      addNote().then((value) {
-                        Fluttertoast.showToast(
-                          msg: "The Note has Added successfully",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                        );
-                        Navigator.pop(context);
-                      });
-                    },
-                    child: Text('Add')),
-                TextButton(
-                    onPressed: () {
+      body: Column(
+        children: [
+          TextFormField(
+            decoration: InputDecoration(
+                border: UnderlineInputBorder(), labelText: 'Title'),
+            validator: (value) {
+              return (value == null ? 'Please Give the Heading ' : null);
+            },
+            keyboardType: TextInputType.text,
+            textCapitalization: TextCapitalization.sentences,
+            autocorrect: true,
+            onChanged: (val) {
+              titleText = val;
+            },
+          ),
+          TextFormField(
+            decoration: InputDecoration(
+                border: UnderlineInputBorder(), labelText: 'Add Note'),
+            validator: (value) {
+              return (value.isEmpty ? 'Please Add some Note to save ' : null);
+            },
+            keyboardType: TextInputType.text,
+            textCapitalization: TextCapitalization.sentences,
+            autocorrect: true,
+            onChanged: (val) {
+              noteText = val;
+            },
+          ),
+          Row(
+            children: [
+              TextButton(
+                  onPressed: () {
+                    addNote().then((value) {
+                      Fluttertoast.showToast(
+                        msg: "The Note has Added successfully",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                      );
                       Navigator.pop(context);
-                    },
-                    child: Text('Cancel')),
-              ],
-            )
-          ],
-        ),
+                    });
+                  },
+                  child: Text('Add')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text('Cancel')),
+            ],
+          )
+        ],
       ),
     );
   }
