@@ -22,7 +22,7 @@ class SettingsPage extends StatelessWidget {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               prefs.clear();
               storage.remove('email');
-              Get.off(() => SignInPage());
+              Get.offAll(() => SignInPage());
             },
           ),
         ));

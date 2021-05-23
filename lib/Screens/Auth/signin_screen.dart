@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Components/bottombar.dart';
 import 'package:money_mate/Screens/Auth/signup_screen.dart';
+import 'package:money_mate/Screens/Pages/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatefulWidget {
@@ -221,7 +222,7 @@ class _SignInPageState extends State<SignInPage> {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               prefs.setString('email', _email);
               storage.write('email', _email);
-              Get.offAll(()=>NewBottomBar());
+              Get.offAll(()=>HomePage());
             });
 
         },
