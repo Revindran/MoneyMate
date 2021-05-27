@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class HomePageOld extends StatefulWidget {
   const HomePageOld({Key key}) : super(key: key);
@@ -88,19 +87,6 @@ class _HomePageOldState extends State<HomePageOld> {
                   Container(
                     child: Column(
                       children: [
-                        new CircularPercentIndicator(
-                          radius: 150.0,
-                          lineWidth: 14.0,
-                          animation: anim,
-                          percent: 0.7,
-                          center: new Text(
-                            "Total \n70.0%",
-                            style: new TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20.0),
-                          ),
-                          circularStrokeCap: CircularStrokeCap.round,
-                          progressColor: Colors.amber,
-                        ),
                         SizedBox(
                           height: 10,
                         ),

@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:money_mate/Components/bottombar.dart';
 import 'package:money_mate/Screens/Auth/signup_screen.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatefulWidget {
   @override
@@ -219,8 +217,6 @@ class _SignInPageState extends State<SignInPage> {
                   duration: Duration(seconds: 3),
                   backgroundColor: Get.theme.snackBarTheme.backgroundColor,
                   colorText: Get.theme.snackBarTheme.actionTextColor);
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              prefs.setString('email', _email);
               storage.write('email', _email);
               Get.offAll(()=>HomePage());
             });

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 
 // ignore: must_be_immutable
 class NotesDetails extends StatefulWidget {
@@ -239,11 +239,12 @@ class _NotesDetailsState extends State<NotesDetails> {
   void _deleteNote() {
     note.doc(docID).delete().then((value) {
       Navigator.pop(context);
-      Fluttertoast.showToast(
-        msg: "The Note has deleted successfully",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-      );
+      Get.snackbar(
+          'The Note has deleted successfully..', 'The Note has deleted successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: Duration(seconds: 3),
+          backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+          colorText: Get.theme.snackBarTheme.actionTextColor);
     });
   }
 
@@ -253,7 +254,12 @@ class _NotesDetailsState extends State<NotesDetails> {
       "title": _titleController.text,
       "updated": yyMMdd
     }).then((value) {
-      Fluttertoast.showToast(msg: 'Updated Successful');
+      Get.snackbar(
+          'Updated Successful..', 'The Note has Updated successfully',
+          snackPosition: SnackPosition.BOTTOM,
+          duration: Duration(seconds: 3),
+          backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+          colorText: Get.theme.snackBarTheme.actionTextColor);
     });
   }
 

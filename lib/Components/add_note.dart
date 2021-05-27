@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 
 class AddNotesPage extends StatefulWidget {
   @override
@@ -57,11 +57,12 @@ class _AddNotesPageState extends State<AddNotesPage> {
               TextButton(
                   onPressed: () {
                     addNote().then((value) {
-                      Fluttertoast.showToast(
-                        msg: "The Note has Added successfully",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                      );
+                      Get.snackbar(
+                          'The Note has Added successfully..', 'The Note has Added successfully',
+                          snackPosition: SnackPosition.BOTTOM,
+                          duration: Duration(seconds: 3),
+                          backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+                          colorText: Get.theme.snackBarTheme.actionTextColor);
                       Navigator.pop(context);
                     });
                   },

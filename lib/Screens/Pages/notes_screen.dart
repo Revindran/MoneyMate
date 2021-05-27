@@ -177,7 +177,7 @@ class _NotesPageState extends State<NotesPage> {
 
   Widget _noNotes() {
     return Container(
-      child: Center(child: Text('Empty')),
+      child: Center(child: Text('You don\'t have any notes:(')),
     );
   }
 }

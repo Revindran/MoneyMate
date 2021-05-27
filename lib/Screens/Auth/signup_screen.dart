@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -44,23 +43,17 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery
-          .of(context)
-          .size
-          .width,
+      width: MediaQuery.of(context).size.width,
       color: Colors.grey.shade300,
       child: Stack(
         children: [
           Column(
             children: [
               Container(
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height / 1.8,
+                height: MediaQuery.of(context).size.height / 1.8,
                 decoration: BoxDecoration(
                     borderRadius:
-                    BorderRadius.vertical(bottom: Radius.circular(40)),
+                        BorderRadius.vertical(bottom: Radius.circular(40)),
                     color: Colors.amber),
               )
             ],
@@ -73,28 +66,20 @@ class _SignUpPageState extends State<SignUpPage> {
                   padding: const EdgeInsets.only(top: 70),
                   child: Text(
                     "Money Mate",
-                    style: Theme
-                        .of(context)
-                        .textTheme
-                        .headline4
-                        .copyWith(
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade800,
-                    ),
+                    style: Theme.of(context).textTheme.headline4.copyWith(
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade800,
+                        ),
                   ),
                 ),
                 Text(
                   "Track Your Money Flow",
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .headline4
-                      .copyWith(
-                    fontStyle: FontStyle.italic,
-                    fontSize: 16,
-                    color: Colors.grey.shade800,
-                  ),
+                  style: Theme.of(context).textTheme.headline4.copyWith(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 16,
+                        color: Colors.grey.shade800,
+                      ),
                 ),
               ],
             ),
@@ -115,21 +100,14 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: [
                       Text(
                         "Welcome",
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .headline4
-                            .copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade800,
-                        ),
+                        style: Theme.of(context).textTheme.headline4.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade800,
+                            ),
                       ),
                       Text(
                         "Sign up your account",
-                        style: Theme
-                            .of(context)
-                            .textTheme
-                            .headline6,
+                        style: Theme.of(context).textTheme.headline6,
                       ),
                       const SizedBox(height: 20.0),
                       TextField(
@@ -166,23 +144,20 @@ class _SignUpPageState extends State<SignUpPage> {
                       _isLoading
                           ? CircularProgressIndicator()
                           : Container(
-                        width: MediaQuery
-                            .of(context)
-                            .size
-                            .width / 1.5,
-                        // ignore: deprecated_member_use
-                        child: RaisedButton(
-                          padding: const EdgeInsets.all(16.0),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30.0)),
-                          color: Colors.amber,
-                          textColor: Colors.white,
-                          onPressed: () async {
-                            _validateAndRegister();
-                          },
-                          child: Text("Let\'s Go"),
-                        ),
-                      ),
+                              width: MediaQuery.of(context).size.width / 1.5,
+                              // ignore: deprecated_member_use
+                              child: RaisedButton(
+                                padding: const EdgeInsets.all(16.0),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30.0)),
+                                color: Colors.amber,
+                                textColor: Colors.white,
+                                onPressed: () async {
+                                  _validateAndRegister();
+                                },
+                                child: Text("Let\'s Go"),
+                              ),
+                            ),
                     ],
                   ),
                 ),
@@ -232,7 +207,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _registerUser() async {
     Map<String, dynamic> data = {
-      "First Name": _fName,
+      "Name": _fName,
       "email": _email,
       "password": _password,
       "timeStamp": DateTime.now(),
@@ -241,16 +216,13 @@ class _SignUpPageState extends State<SignUpPage> {
       FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: _email, password: _password)
           .then(
-            (result) async {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          prefs.setString('email', _email);
+        (result) {
           storage.write('email', _email);
           Get.offAll(() => HomePage());
           firestoreInstance
               .collection("Users")
-              .doc("All")
-              .collection(firebaseAuth.currentUser.email)
-              .add(data);
+              .doc(_email)
+              .set(data);
           setState(() {
             _isLoading = false;
           });

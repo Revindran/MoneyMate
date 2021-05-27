@@ -1,15 +1,17 @@
 import 'package:animations/animations.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:money_mate/Components/add_note.dart';
 import 'package:money_mate/Components/circular_menu.dart';
 import 'package:money_mate/Screens/Pages/analytics_screen.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
+import 'package:money_mate/controllers/local_notifications.dart';
+import 'package:money_mate/controllers/user_controller.dart';
 
 import 'add_transactions.dart';
+import 'notes_screen.dart';
 
 const double _fabDimension = 56;
 
@@ -19,6 +21,16 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+var storage = GetStorage();
+final _firStore = FirebaseFirestore.instance;
+var email = storage.read('email');
+var firStream = _firStore
+    .collection('Users')
+    .doc(email)
+    .collection('Transactions')
+    .orderBy("TimeStamp", descending: true)
+    .snapshots();
+
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   AnimationController animationController;
@@ -26,6 +38,8 @@ class _HomePageState extends State<HomePage>
       degTwoTranslationAnimation,
       degThreeTranslationAnimation;
   Animation rotationAnimation;
+  double totalBalance = 0, totalExpanse = 0;
+  final _userController = Get.put<UserController>(UserController());
 
   double getRadiansFromDegree(double degree) {
     double unitRadian = 57.295779513;
@@ -37,6 +51,8 @@ class _HomePageState extends State<HomePage>
     animationController.dispose();
     super.dispose();
   }
+
+  final _controller = Get.find<LocalNotificationsController>();
 
   @override
   void initState() {
@@ -66,9 +82,15 @@ class _HomePageState extends State<HomePage>
     animationController.addListener(() {
       setState(() {});
     });
+    _userController.getUser();
+    _controller.initialize();
+    _controller.configureLocalTimeZone();
+    _controller.nextInstanceOfTenAM();
+    _controller.scheduleDailyTenAMNotification();
+    setState(() {
+      totalAmountCalculations();
+    });
   }
-
-  var storage = GetStorage();
 
   ContainerTransitionType _transitionType = ContainerTransitionType.fade;
 
@@ -92,454 +114,128 @@ class _HomePageState extends State<HomePage>
                     _sizedBoxVertical(),
                     _headerWidget(),
                     _sizedBoxVertical(),
-                    _incomeWidget(),
+                    _incomeWidget(balance: totalBalance, expanse: totalExpanse),
                     _sizedBoxVertical(),
                     _catHScrolls(),
                     _sizedBoxVertical(),
                     _sizedBoxVertical(),
                     _recentTransactions(),
                     Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
+                      child: StreamBuilder<QuerySnapshot>(
+                          stream: firStream,
+                          // ignore: missing_return
+                          builder: (BuildContext context,
+                              AsyncSnapshot<QuerySnapshot> querySnapshot) {
+                            if (querySnapshot.hasError)
+                              return Center(child: Text('Has Error'));
+                            if (querySnapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              CircularProgressIndicator();
+                            }
+                            if (querySnapshot.data == null) {
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            if (querySnapshot.data.size == 0) {
+                              return Center(
+                                child: Text(
+                                    "You did Not have any recent Transactions:("),
+                              );
+                            } else {
+                              return ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                physics: const BouncingScrollPhysics(
+                                    parent: AlwaysScrollableScrollPhysics()),
+                                shrinkWrap: true,
+                                itemCount: querySnapshot.data.docs.length,
+                                itemBuilder: (context, index) {
+                                  final DocumentSnapshot myTransaction =
+                                      querySnapshot.data.docs[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            color: myTransaction['Type'] ==
+                                                    'Income'
+                                                ? Colors.green[50]
+                                                : Colors.red[50],
                                           ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Icon(Icons.money),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(myTransaction['SOI']),
+                                                    Text(myTransaction[
+                                                        'SelectedDate']),
+                                                  ],
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    myTransaction['Type'] ==
+                                                            'Income'
+                                                        ? Text(
+                                                            myTransaction[
+                                                                'Amount'],
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .green),
+                                                          )
+                                                        : Text(
+                                                            myTransaction[
+                                                                'Amount'],
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .redAccent),
+                                                          ),
+                                                    SizedBox(
+                                                      width: 16,
+                                                    ),
+                                                    Icon(
+                                                      CupertinoIcons
+                                                          .arrow_turn_down_right,
+                                                      color: Colors.grey[900],
+                                                    ),
+                                                  ],
+                                                )
+                                              ],
+                                            ),
                                           ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _sizedBoxVertical(),
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Icon(Icons.ac_unit),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text('Buy'),
-                                          Text('5:55 PM'),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text('-\$82'),
-                                          SizedBox(
-                                            width: 16,
-                                          ),
-                                          Icon(
-                                            CupertinoIcons
-                                                .arrow_turn_down_right,
-                                            color: Colors.grey[900],
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  _sizedBoxVertical(),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                                        ),
+                                        SizedBox(
+                                          height: 10,
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                },
+                              );
+                            }
+                          }),
                     ),
                   ],
                 ),
                 Positioned(
-                    right: 30,
+                    right: 20,
                     bottom: 30,
                     child: Stack(
                       alignment: Alignment.bottomRight,
@@ -569,6 +265,8 @@ class _HomePageState extends State<HomePage>
                                 color: Colors.white,
                               ),
                               onClick: () {
+                                // context.navigator.push(AddTransactions()
+                                //     .vxPreviewRoute(parentContext: context));
                                 Get.to(() => AddTransactions());
                                 animationController.reverse();
                               },
@@ -593,7 +291,9 @@ class _HomePageState extends State<HomePage>
                                 color: Colors.white,
                               ),
                               onClick: () {
-                                Get.to(() => AddNotesPage());
+                                // context.navigator.push(NotesPage()
+                                //     .vxPreviewRoute(parentContext: context));
+                                Get.to(() => NotesPage());
                                 animationController.reverse();
                               },
                             ),
@@ -677,50 +377,76 @@ class _HomePageState extends State<HomePage>
       },
     );
   }
-}
 
-Widget _headerWidget() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: Row(
-      children: [
-        Container(
-            width: 55.0,
-            height: 55.0,
-            decoration: new BoxDecoration(
-                shape: BoxShape.circle,
-                image: new DecorationImage(
-                    fit: BoxFit.fill,
-                    image:
-                        new NetworkImage("https://i.imgur.com/BoN9kdC.png")))),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 10,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Nice to see you again",
-                style: TextStyle(
-                    color: Colors.grey[500], fontWeight: FontWeight.w500),
+  totalAmountCalculations() {
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(email)
+        .collection('Transactions')
+        .get()
+        .then((value) {
+      setState(() {
+        for (int i = 0; i < value.docs.length; i++) {
+          QueryDocumentSnapshot snapshot = value.docs[i];
+          if (snapshot['Type'] == 'Income')
+            totalBalance += int.parse(snapshot['Amount']);
+          else if (snapshot['Type'] == 'Expanse')
+            totalExpanse += int.parse(snapshot['Amount']);
+        }
+      });
+    });
+  }
+
+  Widget _headerWidget() {
+    return GestureDetector(
+      onTap: () => Get.to(SettingsPage()),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            Hero(
+              tag: 'tag',
+              child: Container(
+                  width: 55.0,
+                  height: 55.0,
+                  decoration: new BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: new DecorationImage(
+                          fit: BoxFit.fill,
+                          image: AssetImage('assets/user_pic.png')))),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
               ),
-              SizedBox(
-                height: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Nice to see you again",
+                    style: TextStyle(
+                        color: Colors.grey[500], fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(
+                    height: 4,
+                  ),
+                  GetBuilder<UserController>(
+                      builder: (_) => Text('${_userController.name}')),
+                  /*Obx(() => Text(
+                        _userController.name.value,
+                        style: TextStyle(
+                            color: Colors.grey[900],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18),
+                      )),*/
+                ],
               ),
-              Text(
-                "John Doe.",
-                style: TextStyle(
-                    color: Colors.grey[900],
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18),
-              ),
-            ],
-          ),
-        )
-      ],
-    ),
-  );
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Widget _sizedBoxVertical() {
@@ -729,270 +455,170 @@ Widget _sizedBoxVertical() {
   );
 }
 
-Widget _incomeWidget() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
+Widget _incomeWidget({double expanse, double balance}) {
+  return Column(
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              "Your monthly savings",
-              style: TextStyle(
-                  color: Colors.grey[500], fontWeight: FontWeight.w500),
-            ),
-            SizedBox(
-              height: 4,
-            ),
-            Row(
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text("\$"),
                 Text(
-                  "1307.3",
+                  "Your monthly Income",
                   style: TextStyle(
-                      color: Colors.grey[900],
-                      fontWeight: FontWeight.bold,
-                      fontSize: 40),
+                      color: Colors.grey[500], fontWeight: FontWeight.w500),
                 ),
+                SizedBox(
+                  height: 4,
+                ),
+                Row(
+                  children: [
+                    Text("₹"),
+                    Text(
+                      balance.toString(),
+                      style: TextStyle(
+                          color: Colors.green[500],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 35),
+                    ),
+                  ],
+                )
               ],
-            )
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  "Your monthly Expanses",
+                  style: TextStyle(
+                      color: Colors.grey[500], fontWeight: FontWeight.w500),
+                ),
+                SizedBox(
+                  height: 4,
+                ),
+                Row(
+                  children: [
+                    Text("₹"),
+                    Text(
+                      expanse.toString(),
+                      style: TextStyle(
+                          color: Colors.red[400],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ],
         ),
-        Icon(
-          FontAwesomeIcons.moneyCheck,
-          color: Colors.grey[400],
-        )
-      ],
-    ),
+      ),
+    ],
   );
 }
 
 Widget _catHScrolls() {
-  return SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    child: Row(
-      children: [
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          "Categories",
+          style:
+              TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500),
         ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                padding: EdgeInsets.all(10),
-                height: Get.height / 11,
-                width: Get.width / 5,
-                decoration: BoxDecoration(
-                    color: Colors.green[50],
-                    borderRadius: BorderRadius.circular(100)),
-                child: Icon(Icons.shopping_basket_outlined),
-              ),
-            ),
-            Text(
-              'Transfers',
-              style: TextStyle(
-                  color: Colors.grey[600], fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-      ],
-    ),
+      ),
+      StreamBuilder<QuerySnapshot>(
+          stream: firStream,
+          // ignore: missing_return
+          builder: (BuildContext context,
+              AsyncSnapshot<QuerySnapshot> querySnapshot) {
+            if (querySnapshot.hasError) return Center(child: Text('Has Error'));
+            if (querySnapshot.connectionState == ConnectionState.waiting) {
+              CircularProgressIndicator();
+            }
+            if (querySnapshot.data == null) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+            if (querySnapshot.data.size == 0) {
+              return Center(
+                child: Text("You did Not have any recent Transactions:("),
+              );
+            } else {
+              return Container(
+                height: 112,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(
+                      parent: AlwaysScrollableScrollPhysics()),
+                  shrinkWrap: true,
+                  itemCount: querySnapshot.data.docs.length,
+                  itemBuilder: (context, index) {
+                    final DocumentSnapshot myTransaction =
+                        querySnapshot.data.docs[index];
+                    return Row(
+                      children: [
+                        Container(
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  padding: EdgeInsets.all(10),
+                                  height: Get.height / 11,
+                                  width: Get.width / 5,
+                                  decoration: BoxDecoration(
+                                      color: Colors.green[50],
+                                      borderRadius: BorderRadius.circular(100)),
+                                  child: Icon(Icons.shopping_basket_outlined),
+                                ),
+                              ),
+                              Text(
+                                myTransaction['Category'],
+                                style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              );
+            }
+          }),
+    ],
   );
 }
 
 Widget _recentTransactions() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          "Your Recent Transactions:",
+          style:
+              TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500),
+        ),
+      ),
+    ],
+  );
+}
+
+Widget _cat() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
