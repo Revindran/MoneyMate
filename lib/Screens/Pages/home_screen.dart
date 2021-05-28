@@ -24,12 +24,8 @@ class HomePage extends StatefulWidget {
 var storage = GetStorage();
 final _firStore = FirebaseFirestore.instance;
 var email = storage.read('email');
-var firStream = _firStore
-    .collection('Users')
-    .doc(email)
-    .collection('Transactions')
-    .orderBy("TimeStamp", descending: true)
-    .snapshots();
+
+final _userController = Get.put<UserController>(UserController());
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
@@ -38,8 +34,6 @@ class _HomePageState extends State<HomePage>
       degTwoTranslationAnimation,
       degThreeTranslationAnimation;
   Animation rotationAnimation;
-  double totalBalance = 0, totalExpanse = 0;
-  final _userController = Get.put<UserController>(UserController());
 
   double getRadiansFromDegree(double degree) {
     double unitRadian = 57.295779513;
@@ -87,11 +81,10 @@ class _HomePageState extends State<HomePage>
     _controller.configureLocalTimeZone();
     _controller.nextInstanceOfTenAM();
     _controller.scheduleDailyTenAMNotification();
-    setState(() {
-      totalAmountCalculations();
-    });
+    _userController.totalAmountCalculations();
   }
 
+  double totalBalance = 0, totalExpanse = 0;
   ContainerTransitionType _transitionType = ContainerTransitionType.fade;
 
   @override
@@ -114,7 +107,7 @@ class _HomePageState extends State<HomePage>
                     _sizedBoxVertical(),
                     _headerWidget(),
                     _sizedBoxVertical(),
-                    _incomeWidget(balance: totalBalance, expanse: totalExpanse),
+                    _incomeWidget(),
                     _sizedBoxVertical(),
                     _catHScrolls(),
                     _sizedBoxVertical(),
@@ -122,7 +115,12 @@ class _HomePageState extends State<HomePage>
                     _recentTransactions(),
                     Expanded(
                       child: StreamBuilder<QuerySnapshot>(
-                          stream: firStream,
+                          stream: _firStore
+                              .collection('Users')
+                              .doc(email)
+                              .collection('Transactions')
+                              .orderBy("TimeStamp", descending: true)
+                              .snapshots(),
                           // ignore: missing_return
                           builder: (BuildContext context,
                               AsyncSnapshot<QuerySnapshot> querySnapshot) {
@@ -130,18 +128,15 @@ class _HomePageState extends State<HomePage>
                               return Center(child: Text('Has Error'));
                             if (querySnapshot.connectionState ==
                                 ConnectionState.waiting) {
-                              CircularProgressIndicator();
+                              CupertinoActivityIndicator();
                             }
                             if (querySnapshot.data == null) {
                               return Center(
-                                child: CircularProgressIndicator(),
+                                child: CupertinoActivityIndicator(),
                               );
                             }
                             if (querySnapshot.data.size == 0) {
-                              return Center(
-                                child: Text(
-                                    "You did Not have any recent Transactions:("),
-                              );
+                              return _noTransactions();
                             } else {
                               return ListView.builder(
                                 scrollDirection: Axis.vertical,
@@ -179,14 +174,19 @@ class _HomePageState extends State<HomePage>
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                Icon(Icons.money),
+                                                Icon(
+                                                  Icons.money,
+                                                  color: Colors.grey[700],
+                                                ),
                                                 Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    Text(myTransaction['SOI']),
+                                                    Text(myTransaction['SOI'] ??
+                                                        'N/A'),
                                                     Text(myTransaction[
-                                                        'SelectedDate']),
+                                                            'SelectedDate'] ??
+                                                        'N/A'),
                                                   ],
                                                 ),
                                                 Row(
@@ -195,14 +195,16 @@ class _HomePageState extends State<HomePage>
                                                             'Income'
                                                         ? Text(
                                                             myTransaction[
-                                                                'Amount'],
+                                                                    'Amount'] ??
+                                                                'N/A',
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .green),
                                                           )
                                                         : Text(
                                                             myTransaction[
-                                                                'Amount'],
+                                                                    'Amount'] ??
+                                                                'N/A',
                                                             style: TextStyle(
                                                                 color: Colors
                                                                     .redAccent),
@@ -378,24 +380,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  totalAmountCalculations() {
-    FirebaseFirestore.instance
-        .collection('Users')
-        .doc(email)
-        .collection('Transactions')
-        .get()
-        .then((value) {
-      setState(() {
-        for (int i = 0; i < value.docs.length; i++) {
-          QueryDocumentSnapshot snapshot = value.docs[i];
-          if (snapshot['Type'] == 'Income')
-            totalBalance += int.parse(snapshot['Amount']);
-          else if (snapshot['Type'] == 'Expanse')
-            totalExpanse += int.parse(snapshot['Amount']);
-        }
-      });
-    });
-  }
 
   Widget _headerWidget() {
     return GestureDetector(
@@ -430,8 +414,7 @@ class _HomePageState extends State<HomePage>
                   SizedBox(
                     height: 4,
                   ),
-                  GetBuilder<UserController>(
-                      builder: (_) => Text('${_userController.name}')),
+                  Text('${_userController.name}'),
                   /*Obx(() => Text(
                         _userController.name.value,
                         style: TextStyle(
@@ -447,6 +430,103 @@ class _HomePageState extends State<HomePage>
       ),
     );
   }
+
+  Widget _incomeWidget() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "Your monthly Income",
+                    style: TextStyle(
+                        color: Colors.grey[500], fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(
+                    height: 4,
+                  ),
+                  Row(
+                    children: [
+                      Text("₹"),
+                      Obx((){
+                        return Text(
+                          _userController.totalBalance.toString(),
+                          style: TextStyle(
+                              color: Colors.green[500],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 35),
+                        );
+                      })
+                    ],
+                  )
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "Your monthly Expanses",
+                    style: TextStyle(
+                        color: Colors.grey[500], fontWeight: FontWeight.w500),
+                  ),
+                  SizedBox(
+                    height: 4,
+                  ),
+                  Row(
+                    children: [
+                      Text("₹"),
+                      Obx((){
+                        return Text(
+                          _userController.totalExpanse.toString(),
+                          style: TextStyle(
+                              color: Colors.red[400],
+                              fontWeight: FontWeight.bold,
+                              fontSize: 35),
+                        );
+                      })
+                    ],
+                  )
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+Widget _noTransactions() {
+  return Container(
+    child: Center(
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset(
+          "assets/no_transactions.gif",
+        ),
+        Text(
+          'No Transactions Found in your History',
+          style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+        ),
+        Text(
+          'Try create one and Save Money',
+          style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+        ),
+      ],
+    )),
+  );
 }
 
 Widget _sizedBoxVertical() {
@@ -455,73 +535,6 @@ Widget _sizedBoxVertical() {
   );
 }
 
-Widget _incomeWidget({double expanse, double balance}) {
-  return Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "Your monthly Income",
-                  style: TextStyle(
-                      color: Colors.grey[500], fontWeight: FontWeight.w500),
-                ),
-                SizedBox(
-                  height: 4,
-                ),
-                Row(
-                  children: [
-                    Text("₹"),
-                    Text(
-                      balance.toString(),
-                      style: TextStyle(
-                          color: Colors.green[500],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 35),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "Your monthly Expanses",
-                  style: TextStyle(
-                      color: Colors.grey[500], fontWeight: FontWeight.w500),
-                ),
-                SizedBox(
-                  height: 4,
-                ),
-                Row(
-                  children: [
-                    Text("₹"),
-                    Text(
-                      expanse.toString(),
-                      style: TextStyle(
-                          color: Colors.red[400],
-                          fontWeight: FontWeight.bold,
-                          fontSize: 40),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ],
-        ),
-      ),
-    ],
-  );
-}
 
 Widget _catHScrolls() {
   return Column(
@@ -536,26 +549,35 @@ Widget _catHScrolls() {
         ),
       ),
       StreamBuilder<QuerySnapshot>(
-          stream: firStream,
+          stream: _firStore
+              .collection('Users')
+              .doc(email)
+              .collection('Transactions')
+              .orderBy("TimeStamp", descending: true)
+              .snapshots(),
           // ignore: missing_return
           builder: (BuildContext context,
               AsyncSnapshot<QuerySnapshot> querySnapshot) {
             if (querySnapshot.hasError) return Center(child: Text('Has Error'));
             if (querySnapshot.connectionState == ConnectionState.waiting) {
-              CircularProgressIndicator();
+              CupertinoActivityIndicator();
             }
             if (querySnapshot.data == null) {
               return Center(
-                child: CircularProgressIndicator(),
+                child: Text('No data Found'),
               );
             }
             if (querySnapshot.data.size == 0) {
               return Center(
-                child: Text("You did Not have any recent Transactions:("),
+                child: Text(
+                  'No data Found',
+                  style: TextStyle(
+                      color: Colors.grey[400], fontStyle: FontStyle.italic),
+                ),
               );
             } else {
               return Container(
-                height: 112,
+                height: 115,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(
@@ -583,7 +605,7 @@ Widget _catHScrolls() {
                                 ),
                               ),
                               Text(
-                                myTransaction['Category'],
+                                myTransaction['Category'] ?? 'N/A',
                                 style: TextStyle(
                                     color: Colors.grey[600],
                                     fontWeight: FontWeight.w600),
@@ -603,22 +625,6 @@ Widget _catHScrolls() {
 }
 
 Widget _recentTransactions() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          "Your Recent Transactions:",
-          style:
-              TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500),
-        ),
-      ),
-    ],
-  );
-}
-
-Widget _cat() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [

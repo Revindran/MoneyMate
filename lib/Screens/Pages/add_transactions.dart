@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:money_mate/Components/validator.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
 
 class AddTransactions extends StatefulWidget {
@@ -17,22 +19,27 @@ class _AddTransactionsState extends State<AddTransactions> {
   var storage = GetStorage();
   var email;
   String itemSelected = "",
-      amountString,
-      sofIncome,
       sDate,
       selCategory,
       _dropMemoryDownValue;
+
+  final amountString = TextEditingController();
+  final sofIncome = TextEditingController();
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
         centerTitle: true,
         title: Text(
           'Add New Transaction',
-          style: TextStyle(fontSize: 25, color: Colors.black45),
+          style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
         ),
-        elevation: 0,
       ),
       body: Center(
         child: Container(
@@ -43,61 +50,8 @@ class _AddTransactionsState extends State<AddTransactions> {
                 children: <Widget>[
                   Container(
                     decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: Colors.blue.shade50),
-                    width: MediaQuery.of(context).size.width / 1.1,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        onChanged: (value) {
-                          amountString = value;
-                        },
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          icon: Icon(Icons.send),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.blue.shade50,
-                            ),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          hintText: "Enter Amount",
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: Colors.blue.shade50),
-                    width: MediaQuery.of(context).size.width / 1.1,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        onChanged: (value) {
-                          sofIncome = value;
-                        },
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          icon: Icon(Icons.send),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: Colors.blue.shade50,
-                            ),
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          hintText: "Source of Income",
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: Colors.blue.shade50),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.grey[100]),
                     width: MediaQuery.of(context).size.width / 1.1,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -152,8 +106,8 @@ class _AddTransactionsState extends State<AddTransactions> {
                     },
                     child: Container(
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: Colors.blue.shade50),
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey[100]),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
@@ -175,6 +129,36 @@ class _AddTransactionsState extends State<AddTransactions> {
                     ),
                   ),
                   SizedBox(height: 10),
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: amountString,
+                    validator: Validator().amount,
+                    decoration: InputDecoration(
+                      labelText: 'Enter Amount',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey[100],
+                        ),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    keyboardType: TextInputType.text,
+                    controller: sofIncome,
+                    validator: Validator().notEmpty,
+                    decoration: InputDecoration(
+                      labelText: 'Source of Income',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey[100],
+                        ),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
                   _dropMemoryDownValue == null
                       ? Container()
                       : _dropMemoryDownValue == 'Income'
@@ -182,7 +166,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                               height: MediaQuery.of(context).size.height / 3.4,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(30),
-                                  color: Colors.white,
+                                  color: Colors.grey[100],
                                   boxShadow: [
                                     new BoxShadow(
                                       color: Colors.black12,
@@ -1055,7 +1039,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                               height: 10,
                             ),
                             isLoading
-                                ? Center(child: CircularProgressIndicator())
+                                ? Center(child: CupertinoActivityIndicator())
                                 : Text(
                                     'Save',
                                     style: TextStyle(
@@ -1065,7 +1049,20 @@ class _AddTransactionsState extends State<AddTransactions> {
                           ],
                         ),
                         onTap: () {
-                          addIncome();
+                          if (_dropMemoryDownValue == null ||
+                              itemSelected == '') {
+                            Get.snackbar('Please Select the Type',
+                                'Please Select the Type',
+                                snackPosition: SnackPosition.BOTTOM);
+                          } else{
+                            addIncome().then((value) {
+                              setState(() {
+                                _dropMemoryDownValue="";
+                                amountString.clear();
+                                sofIncome.clear();
+                              });
+                            });
+                          }
                         },
                       ),
                     ),
@@ -1099,8 +1096,8 @@ class _AddTransactionsState extends State<AddTransactions> {
       "Income": amountString,
     };
     Map<String, dynamic> data = {
-      "Amount": amountString,
-      "SOI": sofIncome,
+      "Amount": amountString.text,
+      "SOI": sofIncome.text,
       "SelectedDate": "${selectedDate.toLocal()}".split(' ')[0],
       "TimeStamp": DateTime.now(),
       "Category": itemSelected,
@@ -1113,12 +1110,16 @@ class _AddTransactionsState extends State<AddTransactions> {
         .add(data)
         .then((DocumentReference document) {
       print(document.id);
-      Get.off(() => HomePage());
-      isLoading = false;
+      setState(() {
+        isLoading = false;
+      });
+      // Get.off(()=>HomePage());
       Get.snackbar('Upload Successful', 'Upload Successful',
           duration: Duration(seconds: 2), snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) {
-      isLoading = false;
+      setState(() {
+        isLoading = false;
+      });
       print(e);
       Get.snackbar('Error', e.toString(),
           duration: Duration(seconds: 2), snackPosition: SnackPosition.BOTTOM);

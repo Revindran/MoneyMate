@@ -21,38 +21,47 @@ class _AddNotesPageState extends State<AddNotesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add a New Note'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text('Add a New Note',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          TextFormField(
-            decoration: InputDecoration(
-                border: UnderlineInputBorder(), labelText: 'Title'),
-            validator: (value) {
-              return (value == null ? 'Please Give the Heading ' : null);
-            },
-            keyboardType: TextInputType.text,
-            textCapitalization: TextCapitalization.sentences,
-            autocorrect: true,
-            onChanged: (val) {
-              titleText = val;
-            },
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  border: UnderlineInputBorder(), labelText: 'Title'),
+              validator: (value) {
+                return (value == null ? 'Please Give the Heading ' : null);
+              },
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
+              autocorrect: true,
+              onChanged: (val) {
+                titleText = val;
+              },
+            ),
           ),
-          TextFormField(
-            decoration: InputDecoration(
-                border: UnderlineInputBorder(), labelText: 'Add Note'),
-            validator: (value) {
-              return (value.isEmpty ? 'Please Add some Note to save ' : null);
-            },
-            keyboardType: TextInputType.text,
-            textCapitalization: TextCapitalization.sentences,
-            autocorrect: true,
-            onChanged: (val) {
-              noteText = val;
-            },
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  border: UnderlineInputBorder(), labelText: 'Add Note'),
+              validator: (value) {
+                return (value.isEmpty ? 'Please Add some Note to save ' : null);
+              },
+              keyboardType: TextInputType.text,
+              textCapitalization: TextCapitalization.sentences,
+              autocorrect: true,
+              onChanged: (val) {
+                noteText = val;
+              },
+            ),
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               TextButton(
                   onPressed: () {

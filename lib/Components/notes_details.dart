@@ -55,13 +55,15 @@ class _NotesDetailsState extends State<NotesDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: true,
-        title: Text('$titleText'),
+        title: Text('$titleText',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
         actions: [
           IconButton(
             icon: Icon(
               CupertinoIcons.delete_solid,
-              color: Colors.white,
+              color: Colors.grey[500],
             ),
             onPressed: () {
               _deleteNote();
@@ -70,7 +72,7 @@ class _NotesDetailsState extends State<NotesDetails> {
           IconButton(
             icon: Icon(
               CupertinoIcons.doc_on_doc,
-              color: Colors.white,
+              color: Colors.grey[500],
             ),
             onPressed: () {
               // do something
@@ -86,10 +88,10 @@ class _NotesDetailsState extends State<NotesDetails> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Created: $createdDate"),
+                  Text("Created: $createdDate",style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
                   updatedDate == ""
-                      ? Text("LastUpdated: -")
-                      : Text("LastUpdated: $updatedDate"),
+                      ? Text("LastUpdated: -",style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),)
+                      : Text("LastUpdated: $updatedDate",style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
                 ],
               ),
             ),
@@ -101,7 +103,7 @@ class _NotesDetailsState extends State<NotesDetails> {
               child: Container(
                 width: MediaQuery.of(context).size.width / 1.05,
                 decoration: BoxDecoration(
-                    color: Colors.amberAccent,
+                    color: Colors.amber[100],
                     borderRadius: BorderRadius.circular(20)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -117,7 +119,7 @@ class _NotesDetailsState extends State<NotesDetails> {
               child: Container(
                 width: MediaQuery.of(context).size.width / 1.05,
                 decoration: BoxDecoration(
-                    color: Colors.amberAccent,
+                    color: Colors.amber[100],
                     borderRadius: BorderRadius.circular(20)),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -265,7 +267,7 @@ class _NotesDetailsState extends State<NotesDetails> {
 
   Widget _nonUpdateText() {
     return Center(
-      child: Text('Change Something to Update'),
+      child: Text('Change Something to Update',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
     );
   }
 }

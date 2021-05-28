@@ -10,11 +10,35 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Your Analytics'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          'Your Analytics',
+          style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+        ),
         centerTitle: true,
       ),
       body: Center(
-        child: Text('Analytics'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              "assets/analytics3.gif",
+
+            ),
+            Text(
+              'We Are Working on this hardly',
+              style: TextStyle(
+                  color: Colors.grey[400], fontStyle: FontStyle.italic),
+            ),
+            Text(
+              'Will implement this function soon',
+              style: TextStyle(
+                  color: Colors.grey[400], fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
       ),
     );
   }
