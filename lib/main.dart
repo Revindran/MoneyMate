@@ -6,6 +6,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Screens/Pages/analytics_screen.dart';
 import 'package:money_mate/Screens/Pages/notes_screen.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
+import 'package:money_mate/controllers/user_controller.dart';
 import 'Screens/OnBoarding/onboarding_screen.dart';
 import 'Screens/Pages/home_screen.dart';
 import 'controllers/local_notifications.dart';
@@ -17,6 +18,7 @@ void main() async {
   await Firebase.initializeApp();
   await GetStorage.init();
   Get.put<LocalNotificationsController>(LocalNotificationsController());
+  Get.put(UserController());
   var storage = GetStorage();
   var uMail = storage.read('email');
   print(uMail);

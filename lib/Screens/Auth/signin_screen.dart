@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:money_mate/Screens/Auth/reset_password_ui.dart';
 import 'package:money_mate/Screens/Auth/signup_screen.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
 
@@ -117,9 +118,12 @@ class _SignInPageState extends State<SignInPage> {
                         },
                       ),
                       const SizedBox(height: 16.0),
-                      Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text("Forgot your Password?")),
+                      InkWell(
+                        onTap: () => Get.to(() => ResetPasswordUI()),
+                        child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("Forgot your Password?")),
+                      ),
                       const SizedBox(height: 20.0),
                       _isLoading
                           ? CircularProgressIndicator()
@@ -150,12 +154,14 @@ class _SignInPageState extends State<SignInPage> {
                           IconButton(
                             icon: Icon(FontAwesomeIcons.google),
                             color: Colors.indigo,
-                            onPressed: () {},
+                            onPressed: () => Get.snackbar("Under Maintenance",
+                                "This Function is not available at the moment.Please Use Email Login!.",snackPosition: SnackPosition.BOTTOM,snackStyle: SnackStyle.FLOATING),
                           ),
                           IconButton(
                             icon: Icon(FontAwesomeIcons.twitter),
                             color: Colors.blue,
-                            onPressed: () {},
+                            onPressed: () => Get.snackbar("Under Maintenance",
+                                "This Function is not available at the moment.Please Use Email Login!.",snackPosition: SnackPosition.BOTTOM,snackStyle: SnackStyle.FLOATING),
                           ),
                         ],
                       ),
@@ -179,8 +185,7 @@ class _SignInPageState extends State<SignInPage> {
                         ),
                       ),
                       onTap: () {
-                        Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => SignUpPage()));
+                        Get.to(() => SignUpPage());
                       },
                     ),
                   ],
@@ -195,8 +200,12 @@ class _SignInPageState extends State<SignInPage> {
 
   void _validateAndAuth() {
     if (_email.isEmpty || _password.isEmpty) {
-      Get.snackbar('Please Fill all the fields..',
-          'Please Fill all the fields...',duration: Duration(seconds: 3),snackPosition: SnackPosition.BOTTOM,);
+      Get.snackbar(
+        'Please Fill all the fields..',
+        'Please Fill all the fields...',
+        duration: Duration(seconds: 3),
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } else {
       setState(() {
         _isLoading = true;
@@ -209,18 +218,18 @@ class _SignInPageState extends State<SignInPage> {
     try {
       FirebaseAuth.instance
           .signInWithEmailAndPassword(email: _email, password: _password)
-          .then( (result) {
-            setState(() async {
-              Get.snackbar(
-                  'User Signing Successful..', 'User Signing Successfully Completed',
-                  snackPosition: SnackPosition.BOTTOM,
-                  duration: Duration(seconds: 3),
-                  backgroundColor: Get.theme.snackBarTheme.backgroundColor,
-                  colorText: Get.theme.snackBarTheme.actionTextColor);
-              storage.write('email', _email);
-              Get.offAll(()=>HomePage());
-            });
-
+          .then(
+        (result) {
+          setState(() async {
+            Get.snackbar('User Signing Successful..',
+                'User Signing Successfully Completed',
+                snackPosition: SnackPosition.BOTTOM,
+                duration: Duration(seconds: 3),
+                backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+                colorText: Get.theme.snackBarTheme.actionTextColor);
+            storage.write('email', _email);
+            Get.offAll(() => HomePage());
+          });
         },
       );
     } catch (error) {

@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Components/validator.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
+import 'package:money_mate/controllers/user_controller.dart';
 
 class AddTransactions extends StatefulWidget {
   @override
@@ -27,7 +28,7 @@ class _AddTransactionsState extends State<AddTransactions> {
   final sofIncome = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+final UserController _userController = Get.find();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1113,7 +1114,7 @@ class _AddTransactionsState extends State<AddTransactions> {
       setState(() {
         isLoading = false;
       });
-      // Get.off(()=>HomePage());
+      Get.off(()=>HomePage());
       Get.snackbar('Upload Successful', 'Upload Successful',
           duration: Duration(seconds: 2), snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) {

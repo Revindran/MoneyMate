@@ -30,6 +30,7 @@ dependencies:
   velocity_x: ^3.1.0
   flutter_local_notifications: ^6.0.0
   flutter_native_timezone: ^1.1.0
+  shimmer: ^2.0.0
 
 dev_dependencies:
   flutter_test:

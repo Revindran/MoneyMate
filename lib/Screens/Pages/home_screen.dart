@@ -9,6 +9,7 @@ import 'package:money_mate/Screens/Pages/analytics_screen.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
 import 'package:money_mate/controllers/local_notifications.dart';
 import 'package:money_mate/controllers/user_controller.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'add_transactions.dart';
 import 'notes_screen.dart';
@@ -24,8 +25,6 @@ class HomePage extends StatefulWidget {
 var storage = GetStorage();
 final _firStore = FirebaseFirestore.instance;
 var email = storage.read('email');
-
-final _userController = Get.put<UserController>(UserController());
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
@@ -43,10 +42,12 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     animationController.dispose();
+    _userController.dispose();
     super.dispose();
   }
 
   final _controller = Get.find<LocalNotificationsController>();
+  final UserController _userController = Get.find();
 
   @override
   void initState() {
@@ -81,6 +82,8 @@ class _HomePageState extends State<HomePage>
     _controller.configureLocalTimeZone();
     _controller.nextInstanceOfTenAM();
     _controller.scheduleDailyTenAMNotification();
+    _userController.totalExpanse = 0.obs;
+    _userController.totalBalance = 0.obs;
     _userController.totalAmountCalculations();
   }
 
@@ -380,7 +383,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-
   Widget _headerWidget() {
     return GestureDetector(
       onTap: () => Get.to(SettingsPage()),
@@ -414,14 +416,14 @@ class _HomePageState extends State<HomePage>
                   SizedBox(
                     height: 4,
                   ),
-                  Text('${_userController.name}'),
-                  /*Obx(() => Text(
-                        _userController.name.value,
+                  Shimmer.fromColors(
+                    baseColor: Colors.grey[900],
+                    highlightColor: Colors.grey[200],
+                    child: Text('${_userController.name}',
                         style: TextStyle(
                             color: Colors.grey[900],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18),
-                      )),*/
+                            fontWeight: FontWeight.w500)),
+                  ),
                 ],
               ),
             )
@@ -455,7 +457,7 @@ class _HomePageState extends State<HomePage>
                   Row(
                     children: [
                       Text("₹"),
-                      Obx((){
+                      Obx(() {
                         return Text(
                           _userController.totalBalance.toString(),
                           style: TextStyle(
@@ -483,7 +485,7 @@ class _HomePageState extends State<HomePage>
                   Row(
                     children: [
                       Text("₹"),
-                      Obx((){
+                      Obx(() {
                         return Text(
                           _userController.totalExpanse.toString(),
                           style: TextStyle(
@@ -503,7 +505,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 }
-
 
 Widget _noTransactions() {
   return Container(
@@ -535,7 +536,6 @@ Widget _sizedBoxVertical() {
   );
 }
 
-
 Widget _catHScrolls() {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -543,11 +543,12 @@ Widget _catHScrolls() {
       Padding(
         padding: const EdgeInsets.only(left: 20),
         child: Text(
-          "Categories",
+          "Your Recent Categories",
           style:
               TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500),
         ),
       ),
+      _sizedBoxVertical(),
       StreamBuilder<QuerySnapshot>(
           stream: _firStore
               .collection('Users')
@@ -564,13 +565,13 @@ Widget _catHScrolls() {
             }
             if (querySnapshot.data == null) {
               return Center(
-                child: Text('No data Found'),
+                child: Text('Error:|'),
               );
             }
             if (querySnapshot.data.size == 0) {
               return Center(
                 child: Text(
-                  'No data Found',
+                  'No Transactions Data Found!',
                   style: TextStyle(
                       color: Colors.grey[400], fontStyle: FontStyle.italic),
                 ),
@@ -599,7 +600,7 @@ Widget _catHScrolls() {
                                   height: Get.height / 11,
                                   width: Get.width / 5,
                                   decoration: BoxDecoration(
-                                      color: Colors.green[50],
+                                      color: Colors.grey[200],
                                       borderRadius: BorderRadius.circular(100)),
                                   child: Icon(Icons.shopping_basket_outlined),
                                 ),
