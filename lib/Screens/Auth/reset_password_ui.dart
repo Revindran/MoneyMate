@@ -32,14 +32,19 @@ class ResetPasswordUI extends StatelessWidget {
                 children: <Widget>[
                   Hero(
                     tag: 'tag',
-                    child: Container(
-                        width: 100,
-                        height: 100,
-                        decoration: new BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: new DecorationImage(
-
-                                image: AssetImage('assets/user_pic.png')))),
+                    child: GetBuilder<UserController>(builder: (_) {
+                      return Container(
+                          width: 150.0,
+                          height: 150.0,
+                          decoration: new BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: new DecorationImage(
+                                  fit: BoxFit.contain,
+                                  image: _controller.photoUrl == null
+                                      ? AssetImage('assets/user_pic.png')
+                                      : NetworkImage(
+                                      _controller.photoUrl.toString()))));
+                    }),
                   ),
                   SizedBox(height: 48.0),
                   FormInputFieldWithIcon(

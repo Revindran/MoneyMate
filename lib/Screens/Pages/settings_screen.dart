@@ -5,7 +5,9 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Screens/Auth/reset_password_ui.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
+import 'package:money_mate/Screens/Pages/transaction_history.dart';
 import 'package:money_mate/controllers/user_controller.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SettingsPage extends StatelessWidget {
   final storage = GetStorage();
@@ -66,20 +68,35 @@ class SettingsPage extends StatelessWidget {
           SizedBox(
             height: Get.height / 35,
           ),
-          Hero(
-            tag: 'tag',
-            child: Container(
-                width: 100,
-                height: 100,
-                decoration: new BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: new DecorationImage(
-                        fit: BoxFit.fill,
-                        image: AssetImage('assets/user_pic.png')))),
+          InkWell(
+            onTap: () => _userController.getPhotoAndUpload(),
+            child: Hero(
+              tag: 'tag',
+              child: GetBuilder<UserController>(builder: (_) {
+                return Container(
+                    width: 100.0,
+                    height: 100.0,
+                    decoration: new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: new DecorationImage(
+                            fit: BoxFit.contain,
+                            image: _userController.photoUrl == ''
+                                ? AssetImage('assets/user_pic.png')
+                                : NetworkImage(
+                                    _userController.photoUrl.toString()))));
+              }),
+            ),
           ),
           _sizedBoxVertical(),
           GetBuilder<UserController>(
-              builder: (_) => Text('${_userController.name}')),
+            builder: (_) => Shimmer.fromColors(
+              baseColor: Colors.grey[900],
+              highlightColor: Colors.grey[200],
+              child: Text('${_userController.name}',
+                  style: TextStyle(
+                      color: Colors.grey[900], fontWeight: FontWeight.w500)),
+            ),
+          ),
           Text(
             storage.read('email'),
             style:
@@ -202,22 +219,21 @@ class SettingsPage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Profile Setting",
+                        "Profile Settings",
                         style: TextStyle(
                             color: Colors.grey[500],
                             fontWeight: FontWeight.w500),
                       ),
-                      Icon(Icons.arrow_right),
                     ],
                   ),
                 ),
               ),
               _sizedBoxVertical(),
               InkWell(
-                onTap:()=> Get.to(()=> ResetPasswordUI()),
+                onTap: () => Get.to(() => ResetPasswordUI()),
                 child: Container(
                   width: Get.width / 1.05,
                   decoration: BoxDecoration(
@@ -230,6 +246,31 @@ class SettingsPage extends StatelessWidget {
                       children: [
                         Text(
                           "Change Password",
+                          style: TextStyle(
+                              color: Colors.grey[500],
+                              fontWeight: FontWeight.w500),
+                        ),
+                        Icon(Icons.arrow_right),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              _sizedBoxVertical(),
+              InkWell(
+                onTap: () => Get.to(() => THIstory()),
+                child: Container(
+                  width: Get.width / 1.05,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(7),
+                      color: Colors.grey[100]),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Transactions History",
                           style: TextStyle(
                               color: Colors.grey[500],
                               fontWeight: FontWeight.w500),
@@ -257,29 +298,14 @@ class SettingsPage extends StatelessWidget {
                             color: Colors.grey[500],
                             fontWeight: FontWeight.w500),
                       ),
-                      Icon(Icons.arrow_right),
-                    ],
-                  ),
-                ),
-              ),
-              _sizedBoxVertical(),
-              Container(
-                width: Get.width / 1.05,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(7),
-                    color: Colors.grey[100]),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Transactions History",
-                        style: TextStyle(
-                            color: Colors.grey[500],
-                            fontWeight: FontWeight.w500),
-                      ),
-                      Icon(Icons.arrow_right),
+                      GetBuilder<UserController>(builder: (_) {
+                        return CupertinoSwitch(
+                          value: _userController.switchValue,
+                          onChanged: (value) {
+                            _userController.switchValueChange();
+                          },
+                        );
+                      }),
                     ],
                   ),
                 ),

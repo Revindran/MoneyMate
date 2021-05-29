@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Components/validator.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
-import 'package:money_mate/controllers/user_controller.dart';
+import 'package:money_mate/controllers/category_controller.dart';
 
 class AddTransactions extends StatefulWidget {
   @override
@@ -19,16 +18,12 @@ class _AddTransactionsState extends State<AddTransactions> {
   DateTime selectedDate = DateTime.now();
   var storage = GetStorage();
   var email;
-  String itemSelected = "",
-      sDate,
-      selCategory,
-      _dropMemoryDownValue;
-
+  String itemSelected = "", sDate, selCategory, _dropMemoryDownValue;
+  var selectedItem = 0;
+  final _controller = Get.put<CatController>(CatController());
   final amountString = TextEditingController();
   final sofIncome = TextEditingController();
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-final UserController _userController = Get.find();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,6 +44,65 @@ final UserController _userController = Get.find();
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: amountString,
+                    validator: Validator().amount,
+                    decoration: InputDecoration(
+                      labelText: 'Enter Amount',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey[100],
+                        ),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    keyboardType: TextInputType.text,
+                    controller: sofIncome,
+                    validator: Validator().notEmpty,
+                    decoration: InputDecoration(
+                      labelText: 'Source of Income',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: Colors.grey[100],
+                        ),
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      _selectDate(context);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey[100]),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.calendar_today_outlined), // Refer step 3
+                            Text(
+                              "${selectedDate.toLocal()}".split(' ')[0],
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
                   Container(
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
@@ -101,973 +155,134 @@ final UserController _userController = Get.find();
                     ),
                   ),
                   SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () {
-                      _selectDate(context);
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.grey[100]),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                  _dropMemoryDownValue == null
+                      ? Container()
+                      : Column(
                           children: [
-                            Icon(Icons.calendar_today_outlined), // Refer step 3
                             Text(
-                              "${selectedDate.toLocal()}".split(' ')[0],
+                              'Select Category',
                               style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                  color: Colors.grey[600],
+                                  fontStyle: FontStyle.italic),
+                            ),
+                            SizedBox(height: 10),
+                            Container(
+                              width: Get.width / 1.1,
+                              height: Get.height / 3.5,
+                              child: GridView.builder(
+                                itemCount: _controller.catList.length,
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 4,
+                                        crossAxisSpacing: 10,
+                                        mainAxisSpacing: 10),
+                                itemBuilder: (context, index) {
+                                  return GestureDetector(
+                                    onTap: () => {
+                                      onCange(
+                                          s: _controller.catList[index].index),
+                                    },
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                              color: _controller.catList[
+                                                          selectedItem] ==
+                                                      _controller.catList[index]
+                                                  ? Colors.grey[200]
+                                                  : Colors.white),
+                                          child: Padding(
+                                            padding: EdgeInsets.all(16),
+                                            child:
+                                                _controller.catList[index].icon,
+                                          ),
+                                        ),
+                                        Text(
+                                          _controller.catList[index].title,
+                                          style: TextStyle(
+                                              fontStyle: FontStyle.italic,
+                                              color: Colors.grey[500]),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    controller: amountString,
-                    validator: Validator().amount,
-                    decoration: InputDecoration(
-                      labelText: 'Enter Amount',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey[100],
-                        ),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  TextFormField(
-                    keyboardType: TextInputType.text,
-                    controller: sofIncome,
-                    validator: Validator().notEmpty,
-                    decoration: InputDecoration(
-                      labelText: 'Source of Income',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey[100],
-                        ),
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  _dropMemoryDownValue == null
-                      ? Container()
-                      : _dropMemoryDownValue == 'Income'
-                          ? Container(
-                              height: MediaQuery.of(context).size.height / 3.4,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  color: Colors.grey[100],
-                                  boxShadow: [
-                                    new BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 5.0,
-                                    )
-                                  ]),
+                  isLoading
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 100),
+                          child: Center(child: CupertinoActivityIndicator()),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(top: 100),
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: GestureDetector(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    'Choose the category',
-                                    style: TextStyle(
-                                      fontSize: 15,
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(30),
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                              color: Colors.black12,
+                                              blurRadius: 5.0)
+                                        ]),
+                                    height: 50,
+                                    width: 50,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.arrow_forward_sharp,
+                                          size: 30,
+                                        )
+                                      ],
                                     ),
                                   ),
                                   SizedBox(
                                     height: 10,
                                   ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Interest'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Interest')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Interest';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Deposit'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Deposit')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Deposit';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Business'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Business')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Business';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Salary'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Salary')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Salary';
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Recharge'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Recharge')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Recharge';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Reward'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Reward')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Reward';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Return'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Return')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Return';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Bank'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Bank')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Bank';
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Credit'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Credit')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Credit';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Transfer'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Transfer')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Transfer';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Loan'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Loan')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Loan';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Bill'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Bill')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Bill';
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Container(
-                              height: MediaQuery.of(context).size.height / 3.4,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    new BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 5.0,
-                                    )
-                                  ]),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
                                   Text(
-                                    'Choose the category',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Interest'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Interest')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Interest';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Deposit'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Deposit')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Deposit';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Business'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Business')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Business';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Salary'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Salary')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Salary';
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Recharge'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Recharge')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Recharge';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Reward'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Reward')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Reward';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Return'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Return')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Return';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Bank'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Bank')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Bank';
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 20,
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Credit'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Credit')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Credit';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Transfer'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Transfer')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Transfer';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Loan'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Loan')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Loan';
-                                          });
-                                        },
-                                      ),
-                                      InkWell(
-                                        child: Container(
-                                            height: 60,
-                                            width: 60,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                    color: Colors.black12,
-                                                    blurRadius: 5.0)
-                                              ],
-                                              color: itemSelected == 'Bill'
-                                                  ? Colors.blue.shade50
-                                                  : Colors.white,
-                                            ),
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Icons.add,
-                                                  size: 40,
-                                                ),
-                                                Text('Bill')
-                                              ],
-                                            )),
-                                        onTap: () {
-                                          setState(() {
-                                            itemSelected = 'Bill';
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 100),
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: GestureDetector(
-                        child: Column(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  color: Colors.white,
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: Colors.black12, blurRadius: 5.0)
-                                  ]),
-                              height: 50,
-                              width: 50,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.arrow_forward_sharp,
-                                    size: 30,
-                                  )
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            isLoading
-                                ? Center(child: CupertinoActivityIndicator())
-                                : Text(
                                     'Save',
                                     style: TextStyle(
                                       fontSize: 15,
                                     ),
                                   )
-                          ],
+                                ],
+                              ),
+                              onTap: () {
+                                if (_dropMemoryDownValue == null ||
+                                    amountString.text == '' ||
+                                    sofIncome.text == '') {
+                                  Get.snackbar('Please Fill all the fields',
+                                      'Please Fill all the fields to continue',
+                                      snackPosition: SnackPosition.BOTTOM);
+                                } else if (selectedItem == 0) {
+                                  Get.snackbar(
+                                      'Please select the Category type',
+                                      'Please select the Category type to continue',
+                                      snackPosition: SnackPosition.BOTTOM);
+                                } else {
+                                  addIncome().then((value) {
+                                    setState(() {
+                                      _dropMemoryDownValue = "";
+                                      amountString.clear();
+                                      sofIncome.clear();
+                                    });
+                                  });
+                                }
+                              },
+                            ),
+                          ),
                         ),
-                        onTap: () {
-                          if (_dropMemoryDownValue == null ||
-                              itemSelected == '') {
-                            Get.snackbar('Please Select the Type',
-                                'Please Select the Type',
-                                snackPosition: SnackPosition.BOTTOM);
-                          } else{
-                            addIncome().then((value) {
-                              setState(() {
-                                _dropMemoryDownValue="";
-                                amountString.clear();
-                                sofIncome.clear();
-                              });
-                            });
-                          }
-                        },
-                      ),
-                    ),
-                  ),
                 ],
               ),
             )),
@@ -1101,7 +316,7 @@ final UserController _userController = Get.find();
       "SOI": sofIncome.text,
       "SelectedDate": "${selectedDate.toLocal()}".split(' ')[0],
       "TimeStamp": DateTime.now(),
-      "Category": itemSelected,
+      "Category": _controller.catList[selectedItem].title.toString(),
       "Type": _dropMemoryDownValue,
     };
     FirebaseFirestore.instance
@@ -1114,7 +329,7 @@ final UserController _userController = Get.find();
       setState(() {
         isLoading = false;
       });
-      Get.off(()=>HomePage());
+      Get.off(() => HomePage());
       Get.snackbar('Upload Successful', 'Upload Successful',
           duration: Duration(seconds: 2), snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) {
@@ -1124,6 +339,12 @@ final UserController _userController = Get.find();
       print(e);
       Get.snackbar('Error', e.toString(),
           duration: Duration(seconds: 2), snackPosition: SnackPosition.BOTTOM);
+    });
+  }
+
+  void onCange({int s}) {
+    setState(() {
+      selectedItem = s;
     });
   }
 }

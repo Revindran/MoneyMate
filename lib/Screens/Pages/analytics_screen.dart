@@ -24,11 +24,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              "assets/analytics3.gif",
+              "assets/analytics.png",
 
             ),
             Text(
-              'We Are Working on this hardly',
+              'This function is under development!',
               style: TextStyle(
                   color: Colors.grey[400], fontStyle: FontStyle.italic),
             ),

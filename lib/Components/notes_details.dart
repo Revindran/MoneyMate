@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 // ignore: must_be_immutable
@@ -58,7 +59,11 @@ class _NotesDetailsState extends State<NotesDetails> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text('$titleText',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
+        title: Text(
+          '$titleText',
+          style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+        ),
         actions: [
           IconButton(
             icon: Icon(
@@ -75,7 +80,9 @@ class _NotesDetailsState extends State<NotesDetails> {
               color: Colors.grey[500],
             ),
             onPressed: () {
-              // do something
+              Clipboard.setData(ClipboardData(text: noteText)).then((value) {
+                Get.snackbar('Copied', 'Note copied to clipboard',snackPosition: SnackPosition.BOTTOM);
+              });
             },
           )
         ],
@@ -88,10 +95,24 @@ class _NotesDetailsState extends State<NotesDetails> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Created: $createdDate",style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
+                  Text(
+                    "Created: $createdDate",
+                    style: TextStyle(
+                        color: Colors.grey[400], fontStyle: FontStyle.italic),
+                  ),
                   updatedDate == ""
-                      ? Text("LastUpdated: -",style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),)
-                      : Text("LastUpdated: $updatedDate",style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
+                      ? Text(
+                          "LastUpdated: -",
+                          style: TextStyle(
+                              color: Colors.grey[400],
+                              fontStyle: FontStyle.italic),
+                        )
+                      : Text(
+                          "LastUpdated: $updatedDate",
+                          style: TextStyle(
+                              color: Colors.grey[400],
+                              fontStyle: FontStyle.italic),
+                        ),
                 ],
               ),
             ),
@@ -241,8 +262,8 @@ class _NotesDetailsState extends State<NotesDetails> {
   void _deleteNote() {
     note.doc(docID).delete().then((value) {
       Navigator.pop(context);
-      Get.snackbar(
-          'The Note has deleted successfully..', 'The Note has deleted successfully',
+      Get.snackbar('The Note has deleted successfully..',
+          'The Note has deleted successfully',
           snackPosition: SnackPosition.BOTTOM,
           duration: Duration(seconds: 3),
           backgroundColor: Get.theme.snackBarTheme.backgroundColor,
@@ -256,8 +277,7 @@ class _NotesDetailsState extends State<NotesDetails> {
       "title": _titleController.text,
       "updated": yyMMdd
     }).then((value) {
-      Get.snackbar(
-          'Updated Successful..', 'The Note has Updated successfully',
+      Get.snackbar('Updated Successful..', 'The Note has Updated successfully',
           snackPosition: SnackPosition.BOTTOM,
           duration: Duration(seconds: 3),
           backgroundColor: Get.theme.snackBarTheme.backgroundColor,
@@ -267,7 +287,10 @@ class _NotesDetailsState extends State<NotesDetails> {
 
   Widget _nonUpdateText() {
     return Center(
-      child: Text('Change Something to Update',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
+      child: Text(
+        'Change Something to Update',
+        style: TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+      ),
     );
   }
 }

@@ -42,7 +42,6 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     animationController.dispose();
-    _userController.dispose();
     super.dispose();
   }
 
@@ -392,14 +391,19 @@ class _HomePageState extends State<HomePage>
           children: [
             Hero(
               tag: 'tag',
-              child: Container(
-                  width: 55.0,
-                  height: 55.0,
-                  decoration: new BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: new DecorationImage(
-                          fit: BoxFit.fill,
-                          image: AssetImage('assets/user_pic.png')))),
+              child: GetBuilder<UserController>(builder: (_) {
+                return Container(
+                    width: 55.0,
+                    height: 55.0,
+                    decoration: new BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: new DecorationImage(
+                            fit: BoxFit.cover,
+                            image: _userController.photoUrl == ''
+                                ? AssetImage('assets/user_pic.png')
+                                : NetworkImage(
+                                    _userController.photoUrl.toString()))));
+              }),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -416,13 +420,15 @@ class _HomePageState extends State<HomePage>
                   SizedBox(
                     height: 4,
                   ),
-                  Shimmer.fromColors(
-                    baseColor: Colors.grey[900],
-                    highlightColor: Colors.grey[200],
-                    child: Text('${_userController.name}',
-                        style: TextStyle(
-                            color: Colors.grey[900],
-                            fontWeight: FontWeight.w500)),
+                  GetBuilder<UserController>(
+                    builder: (_) => Shimmer.fromColors(
+                      baseColor: Colors.grey[900],
+                      highlightColor: Colors.grey[200],
+                      child: Text('${_userController.name}',
+                          style: TextStyle(
+                              color: Colors.grey[900],
+                              fontWeight: FontWeight.w500)),
+                    ),
                   ),
                 ],
               ),
@@ -506,29 +512,7 @@ class _HomePageState extends State<HomePage>
   }
 }
 
-Widget _noTransactions() {
-  return Container(
-    child: Center(
-        child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset(
-          "assets/no_transactions.gif",
-        ),
-        Text(
-          'No Transactions Found in your History',
-          style:
-              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
-        ),
-        Text(
-          'Try create one and Save Money',
-          style:
-              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
-        ),
-      ],
-    )),
-  );
-}
+
 
 Widget _sizedBoxVertical() {
   return SizedBox(
@@ -638,5 +622,28 @@ Widget _recentTransactions() {
         ),
       ),
     ],
+  );
+}
+Widget _noTransactions() {
+  return Container(
+    child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              "assets/no_transactions.gif",
+            ),
+            Text(
+              'No Transactions Found in your History',
+              style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+            ),
+            Text(
+              'Try create one and Save Money',
+              style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+            ),
+          ],
+        )),
   );
 }

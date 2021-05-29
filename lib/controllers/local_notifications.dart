@@ -126,8 +126,8 @@ class LocalNotificationsController extends GetxController {
   Future scheduleDailyTenAMNotification() async {
     await _flutterLocalNotificationsPlugin.zonedSchedule(
         0,
-        'daily scheduled notification title',
-        'daily scheduled notification body',
+        'Good Evening',
+        'Have you done any payments Today. Note now!',
         nextInstanceOfTenAM(),
         const NotificationDetails(
           android: AndroidNotificationDetails(

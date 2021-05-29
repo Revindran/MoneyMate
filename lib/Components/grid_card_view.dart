@@ -14,59 +14,56 @@ class GridCardView extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWellOverlay(
       openContainer: openContainer,
-      child: Card(
-        // elevation: 5,
-        child: new GridTile(
-            child: new Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                color: Colors.transparent,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Title',
-                          style: TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                        Text(
-                          snap['created'],
-                          style: TextStyle(fontSize: 8),
-                        ),
-                      ],
-                    ),
-                    Text(
-                      snap['title'] ?? "N/A",
-                      softWrap: false,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      'Note',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                    Text(
-                      snap['Note'] ?? "N/A",
-                      softWrap: true,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 20, color: Colors.black),
-                    ),
-                  ],
-                ),
+      child: new GridTile(
+          child: new Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              color: Colors.transparent,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Title',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                      Text(
+                        snap['created'],
+                        style: TextStyle(fontSize: 8),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    snap['title'] ?? "N/A",
+                    softWrap: false,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 16, color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    'Note',
+                    style: TextStyle(fontStyle: FontStyle.italic),
+                  ),
+                  Text(
+                    snap['Note'] ?? "N/A",
+                    softWrap: true,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 20, color: Colors.black),
+                  ),
+                ],
               ),
             ),
-          ],
-        )),
-      ),
+          ),
+        ],
+      )),
     );
   }
 }
