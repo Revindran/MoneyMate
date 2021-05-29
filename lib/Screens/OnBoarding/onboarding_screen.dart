@@ -24,10 +24,10 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    const bodyStyle = TextStyle(fontSize: 19.0);
-
+    const bodyStyle = TextStyle(fontSize: 19.0,fontStyle: FontStyle.italic,color: Colors.grey);
+const color = Colors.grey;
     const pageDecoration = const PageDecoration(
-      titleTextStyle: TextStyle(fontSize: 28.0, fontWeight: FontWeight.w700),
+      titleTextStyle: TextStyle(fontSize: 24.0, fontWeight: FontWeight.w700,color: Colors.grey),
       bodyTextStyle: bodyStyle,
       descriptionPadding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
       pageColor: Colors.white,
@@ -50,22 +50,22 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
         PageViewModel(
           title: "Track the Money Flow",
           body:
-          "Instead of having to buy an entire share, invest any amount you want.",
-          image: _buildImage('img11.jpg'),
+          "Instead of having to memorize everything about your money flow, Note it down in this safe and secure place.",
+          image: _buildImage('img1.jpg'),
           decoration: pageDecoration,
         ),
         PageViewModel(
-          title: "Save for future",
+          title: "Have a vision about Future",
           body:
-          "Download the Stockpile app and master the market with our mini-lesson.",
-          image: _buildImage('img22.jpg'),
+          "Track the Excess of the money you spend every month and save big. for your future!",
+          image: _buildImage('img3.jpg'),
           decoration: pageDecoration,
         ),
         PageViewModel(
-          title: "Get All your Analytics",
+          title: "Got updated with your Analytics",
           body:
-          "Kids and teens can track their stocks 24/7 and place trades that you approve.",
-          image: _buildImage('img33.jpg'),
+          "Get your all updated analytics every month and make reminders for upcoming events",
+          image: _buildImage('img2.jpg'),
           decoration: pageDecoration,
         ),
       ],
@@ -93,7 +93,7 @@ class _OnBoardingPageState extends State<OnBoardingPage> {
         ),
       ),
       dotsContainerDecorator: const ShapeDecoration(
-        color: Colors.black54,
+        color:  Colors.grey,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
         ),

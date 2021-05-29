@@ -20,7 +20,7 @@ class _SignInPageState extends State<SignInPage> {
   bool _isLoading = false;
 
   var storage = GetStorage();
-
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   @override
   void initState() {
     _email = "";
@@ -93,7 +93,7 @@ class _SignInPageState extends State<SignInPage> {
                             ),
                       ),
                       Text(
-                        "Sign in your account",
+                        "Sign in Your Account",
                         style: Theme.of(context).textTheme.headline6,
                       ),
                       const SizedBox(height: 20.0),
@@ -154,14 +154,18 @@ class _SignInPageState extends State<SignInPage> {
                           IconButton(
                             icon: Icon(FontAwesomeIcons.google),
                             color: Colors.indigo,
-                            onPressed: () => Get.snackbar("Under Maintenance",
-                                "This Function is not available at the moment.Please Use Email Login!.",snackPosition: SnackPosition.BOTTOM,snackStyle: SnackStyle.FLOATING),
+                            onPressed: () => Get.snackbar("Under Development",
+                                "This Function is not available at the moment.Please Use Email Login!.",
+                                snackPosition: SnackPosition.BOTTOM,
+                                snackStyle: SnackStyle.FLOATING),
                           ),
                           IconButton(
                             icon: Icon(FontAwesomeIcons.twitter),
                             color: Colors.blue,
-                            onPressed: () => Get.snackbar("Under Maintenance",
-                                "This Function is not available at the moment.Please Use Email Login!.",snackPosition: SnackPosition.BOTTOM,snackStyle: SnackStyle.FLOATING),
+                            onPressed: () => Get.snackbar("Under Development",
+                                "This Function is not available at the moment.Please Use Email Login!.",
+                                snackPosition: SnackPosition.BOTTOM,
+                                snackStyle: SnackStyle.FLOATING),
                           ),
                         ],
                       ),
@@ -215,34 +219,30 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   void _authUser() async {
-    try {
-      FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: _email, password: _password)
-          .then(
-        (result) {
-          setState(() async {
-            Get.snackbar('User Signing Successful..',
-                'User Signing Successfully Completed',
-                snackPosition: SnackPosition.BOTTOM,
-                duration: Duration(seconds: 3),
-                backgroundColor: Get.theme.snackBarTheme.backgroundColor,
-                colorText: Get.theme.snackBarTheme.actionTextColor);
-            storage.write('email', _email);
-            Get.offAll(() => HomePage());
-          });
-        },
-      );
-    } catch (error) {
-      Get.snackbar(
-          'Sign In Error', 'Login failed: email or password incorrect.',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: Duration(seconds: 7),
-          backgroundColor: Get.theme.snackBarTheme.backgroundColor,
-          colorText: Get.theme.snackBarTheme.actionTextColor);
-      setState(() {
-        _isLoading = false;
-      });
-      print(error);
-    }
+      try {
+        await _auth
+            .signInWithEmailAndPassword(email: _email, password: _password)
+            .then((result) {
+          Get.snackbar(
+              'User Signing Successful..', 'User Signing Successfully Completed',
+              snackPosition: SnackPosition.BOTTOM,
+              duration: Duration(seconds: 3),
+              backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+              colorText: Get.theme.snackBarTheme.actionTextColor);
+          storage.write('email', _email);
+          Get.offAll(() => HomePage());
+        });
+      } on Exception catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        Get.snackbar(
+            'Sign In Error', e.toString(),
+            snackPosition: SnackPosition.BOTTOM,
+            duration: Duration(seconds: 7),
+            backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+            colorText: Get.theme.snackBarTheme.actionTextColor);
+      }
+
   }
 }

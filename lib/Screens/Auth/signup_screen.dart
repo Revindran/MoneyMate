@@ -18,7 +18,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   var storage = GetStorage();
 
-  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final firestoreInstance = FirebaseFirestore.instance;
 
@@ -213,16 +213,13 @@ class _SignUpPageState extends State<SignUpPage> {
       "timeStamp": DateTime.now(),
     };
     try {
-      FirebaseAuth.instance
+      await _auth
           .createUserWithEmailAndPassword(email: _email, password: _password)
           .then(
         (result) {
           storage.write('email', _email);
           Get.offAll(() => HomePage());
-          firestoreInstance
-              .collection("Users")
-              .doc(_email)
-              .set(data);
+          firestoreInstance.collection("Users").doc(_email).set(data);
           setState(() {
             _isLoading = false;
           });
@@ -252,6 +249,8 @@ class _SignUpPageState extends State<SignUpPage> {
       setState(() {
         _isLoading = false;
       });
+      Get.snackbar('Error.', e.toString(),
+          duration: Duration(seconds: 3), snackPosition: SnackPosition.BOTTOM);
       print(e);
     }
   }

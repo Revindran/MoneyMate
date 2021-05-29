@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Components/input_field_with_icon.dart';
 import 'package:money_mate/Components/validator.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
@@ -11,8 +12,9 @@ class ResetPasswordUI extends StatelessWidget {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final emailController = TextEditingController();
-
+  var storage = GetStorage();
   Widget build(BuildContext context) {
+    var email = storage.read('email');
     return Scaffold(
       appBar: AppBar(
         title: Text('Password Reset',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
@@ -40,7 +42,7 @@ class ResetPasswordUI extends StatelessWidget {
                               shape: BoxShape.circle,
                               image: new DecorationImage(
                                   fit: BoxFit.contain,
-                                  image: _controller.photoUrl == null
+                                  image: email==null
                                       ? AssetImage('assets/user_pic.png')
                                       : NetworkImage(
                                       _controller.photoUrl.toString()))));
