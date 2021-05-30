@@ -211,6 +211,7 @@ class _SignUpPageState extends State<SignUpPage> {
       "email": _email,
       "password": _password,
       "timeStamp": DateTime.now(),
+      "photoUrl": "",
     };
     try {
       await _auth
