@@ -5,7 +5,7 @@ description: A new Flutter application.
 # pub.dev using `pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -22,16 +22,15 @@ dependencies:
   firebase_auth: ^1.0.2
   firebase_core: ^1.0.3
   cloud_firestore: ^1.0.4
-  shared_preferences: ^2.0.5
   firebase_storage: ^8.0.2
   animations: ^2.0.0
   get: ^4.1.4
   get_storage: ^2.0.2
-  velocity_x: ^3.1.0
   flutter_local_notifications: ^6.0.0
   flutter_native_timezone: ^1.1.0
   shimmer: ^2.0.0
   file_picker: ^3.0.2+2
+  fl_chart: ^0.36.1
 
 dev_dependencies:
   flutter_test:

@@ -64,41 +64,12 @@ class _AddTransactionsState extends State<AddTransactions> {
                     controller: sofIncome,
                     validator: Validator().notEmpty,
                     decoration: InputDecoration(
-                      labelText: 'Source of Income',
+                      labelText: 'Source',
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: Colors.grey[100],
                         ),
                         borderRadius: BorderRadius.circular(10.0),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () {
-                      _selectDate(context);
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.grey[100]),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.calendar_today_outlined), // Refer step 3
-                            Text(
-                              "${selectedDate.toLocal()}".split(' ')[0],
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ),
@@ -155,64 +126,61 @@ class _AddTransactionsState extends State<AddTransactions> {
                     ),
                   ),
                   SizedBox(height: 10),
-                  _dropMemoryDownValue == null
-                      ? Container()
-                      : Column(
+                  InkWell(
+                    onTap: ()=>_catType(),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey[100]),
+                      width: MediaQuery.of(context).size.width / 1.1,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            selectedItem == 0
+                                ? "*Please Select Category Type"
+                                : _controller.catList[selectedItem].title
+                                    .toString(),
+                            style: TextStyle(
+                                color: Colors.grey[700],
+                                fontStyle: FontStyle.italic),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      _selectDate(context);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.grey[100]),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            Icon(Icons.calendar_today_outlined,color: Colors.grey[600],size: 18,),
+                            SizedBox(width: 16,),// Refer step 3
                             Text(
-                              'Select Category',
+                              "${selectedDate.toLocal()}".split(' ')[0],
                               style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
                                   color: Colors.grey[600],
-                                  fontStyle: FontStyle.italic),
-                            ),
-                            SizedBox(height: 10),
-                            Container(
-                              width: Get.width / 1.1,
-                              height: Get.height / 3.5,
-                              child: GridView.builder(
-                                itemCount: _controller.catList.length,
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 4,
-                                        crossAxisSpacing: 10,
-                                        mainAxisSpacing: 10),
-                                itemBuilder: (context, index) {
-                                  return GestureDetector(
-                                    onTap: () => {
-                                      onCange(
-                                          s: _controller.catList[index].index),
-                                    },
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(100),
-                                              color: _controller.catList[
-                                                          selectedItem] ==
-                                                      _controller.catList[index]
-                                                  ? Colors.grey[200]
-                                                  : Colors.white),
-                                          child: Padding(
-                                            padding: EdgeInsets.all(16),
-                                            child:
-                                                _controller.catList[index].icon,
-                                          ),
-                                        ),
-                                        Text(
-                                          _controller.catList[index].title,
-                                          style: TextStyle(
-                                              fontStyle: FontStyle.italic,
-                                              color: Colors.grey[500]),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                  fontStyle: FontStyle.italic
                               ),
+                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
                   isLoading
                       ? Padding(
                           padding: const EdgeInsets.only(top: 100),
@@ -303,6 +271,88 @@ class _AddTransactionsState extends State<AddTransactions> {
       setState(() {
         selectedDate = picked;
       });
+  }
+
+  _catType(){
+    return showModalBottomSheet(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        context: context,
+        builder: (context) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'Select Category',
+                      style: TextStyle(
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic),
+                    ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: Get.width / 1.1,
+                      height: Get.height / 2.5,
+                      child: GridView.builder(
+                        itemCount: _controller.catList.length,
+                        gridDelegate:
+                        SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10),
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () => {
+                              onCange(
+                                  s: _controller
+                                      .catList[index].index),
+                              Get.back(),
+                            },
+                            child: Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          100),
+                                      color: _controller
+                                          .catList[
+                                      selectedItem] ==
+                                          _controller
+                                              .catList[
+                                          index]
+                                          ? Colors.grey[200]
+                                          : Colors.white),
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: _controller
+                                        .catList[index].icon,
+                                  ),
+                                ),
+                                Text(
+                                  _controller
+                                      .catList[index].title,
+                                  style: TextStyle(
+                                      fontStyle:
+                                      FontStyle.italic,
+                                      color: Colors.grey[500]),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        });
   }
 
   Future<void> addIncome() async {

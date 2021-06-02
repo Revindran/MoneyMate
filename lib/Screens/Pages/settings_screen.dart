@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:money_mate/Components/balance%20chart.dart';
 import 'package:money_mate/Screens/Auth/reset_password_ui.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
 import 'package:money_mate/Screens/Pages/transaction_history.dart';
@@ -80,7 +81,7 @@ class SettingsPage extends StatelessWidget {
                         shape: BoxShape.circle,
                         image: new DecorationImage(
                             fit: BoxFit.contain,
-                            image: _userController.photoUrl == ''
+                            image: _userController.photoUrl.isEmpty
                                 ? AssetImage('assets/user_pic.png')
                                 : NetworkImage(
                                     _userController.photoUrl.toString()))));
@@ -101,6 +102,29 @@ class SettingsPage extends StatelessWidget {
             storage.read('email'),
             style:
                 TextStyle(color: Colors.grey[500], fontWeight: FontWeight.w500),
+          ),
+          _sizedBoxVertical(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Balance',
+                style: TextStyle(
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic),
+              ),
+              Text(
+                "₹" + '${_userController.totalIncome.value - _userController.totalExpanse.value}',
+                style: TextStyle(
+                    color: _userController.totalIncome.value  >
+                            _userController.totalExpanse.value
+                        ? Colors.green[500]
+                        : Colors.red[400],
+                    fontWeight: FontWeight.bold,
+                    fontSize: 25),
+              )
+            ],
           ),
           _sizedBoxVertical(),
           Container(
@@ -148,7 +172,7 @@ class SettingsPage extends StatelessWidget {
                               ),
                               GetBuilder<UserController>(
                                   builder: (_) => Text(
-                                        _userController.totalBalance.toString(),
+                                        _userController.totalIncome.toString(),
                                         style: TextStyle(
                                             color: Colors.green[500],
                                             fontWeight: FontWeight.bold,

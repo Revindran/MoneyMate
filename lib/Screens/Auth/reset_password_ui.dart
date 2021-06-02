@@ -42,7 +42,7 @@ class ResetPasswordUI extends StatelessWidget {
                               shape: BoxShape.circle,
                               image: new DecorationImage(
                                   fit: BoxFit.contain,
-                                  image: email==null || _controller.photoUrl.toString()==''
+                                  image: email==null || _controller.photoUrl.isEmpty
                                       ? AssetImage('assets/user_pic.png')
                                       : NetworkImage(
                                       _controller.photoUrl.toString()))));

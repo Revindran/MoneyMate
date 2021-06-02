@@ -19,7 +19,7 @@ class UserController extends GetxController {
   var name = '...';
   var photoUrl = '...';
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  RxInt totalBalance = 0.obs, totalExpanse = 0.obs;
+  RxInt totalIncome = 0.obs, totalExpanse = 0.obs, totalBalance = 0.obs;
   var switchValue = true;
   var email;
 
@@ -62,9 +62,10 @@ class UserController extends GetxController {
       for (int i = 0; i < value.docs.length; i++) {
         QueryDocumentSnapshot snapshot = value.docs[i];
         if (snapshot['Type'] == 'Income')
-          totalBalance += int.parse(snapshot['Amount']);
+          totalIncome += int.parse(snapshot['Amount']);
         else if (snapshot['Type'] == 'Expanse')
           totalExpanse += int.parse(snapshot['Amount']);
+
         update();
       }
     });

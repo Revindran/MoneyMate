@@ -250,7 +250,7 @@ class _SignUpPageState extends State<SignUpPage> {
       setState(() {
         _isLoading = false;
       });
-      Get.snackbar('Error.', e.toString(),
+      Get.snackbar('Error.', 'Try again after Sometime',
           duration: Duration(seconds: 3), snackPosition: SnackPosition.BOTTOM);
       print(e);
     }

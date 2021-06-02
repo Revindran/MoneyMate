@@ -237,7 +237,7 @@ class _SignInPageState extends State<SignInPage> {
           _isLoading = false;
         });
         Get.snackbar(
-            'Sign In Error', e.toString(),
+            'Sign In Error', 'Your Email/Password is Incorrect',
             snackPosition: SnackPosition.BOTTOM,
             duration: Duration(seconds: 7),
             backgroundColor: Get.theme.snackBarTheme.backgroundColor,

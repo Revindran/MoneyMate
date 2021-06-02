@@ -10,7 +10,7 @@ import 'package:money_mate/Screens/Pages/settings_screen.dart';
 import 'package:money_mate/controllers/local_notifications.dart';
 import 'package:money_mate/controllers/user_controller.dart';
 import 'package:shimmer/shimmer.dart';
-
+import 'package:flutter/gestures.dart';
 import 'add_transactions.dart';
 import 'notes_screen.dart';
 
@@ -25,7 +25,6 @@ class HomePage extends StatefulWidget {
 var storage = GetStorage();
 final _firStore = FirebaseFirestore.instance;
 var email = storage.read('email');
-
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   AnimationController animationController;
@@ -82,304 +81,286 @@ class _HomePageState extends State<HomePage>
     _controller.nextInstanceOfTenAM();
     _controller.scheduleDailyTenAMNotification();
     _userController.totalExpanse = 0.obs;
-    _userController.totalBalance = 0.obs;
+    _userController.totalIncome = 0.obs;
     _userController.totalAmountCalculations();
   }
 
-  double totalBalance = 0, totalExpanse = 0;
+  double totalIncome = 0, totalExpanse = 0;
   ContainerTransitionType _transitionType = ContainerTransitionType.fade;
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Navigator(
-      key: ValueKey(_transitionType),
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute<void>(
-          builder: (context) => Scaffold(
-              body: Container(
-            width: size.width,
-            height: size.height,
-            child: Stack(
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _sizedBoxVertical(),
-                    _sizedBoxVertical(),
-                    _headerWidget(),
-                    _sizedBoxVertical(),
-                    _incomeWidget(),
-                    _sizedBoxVertical(),
-                    _catHScrolls(),
-                    _sizedBoxVertical(),
-                    _sizedBoxVertical(),
-                    _recentTransactions(),
-                    Expanded(
-                      child: StreamBuilder<QuerySnapshot>(
-                          stream: _firStore
-                              .collection('Users')
-                              .doc(email)
-                              .collection('Transactions')
-                              .orderBy("TimeStamp", descending: true)
-                              .snapshots(),
-                          // ignore: missing_return
-                          builder: (BuildContext context,
-                              AsyncSnapshot<QuerySnapshot> querySnapshot) {
-                            if (querySnapshot.hasError)
-                              return Center(child: Text('Has Error'));
-                            if (querySnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              CupertinoActivityIndicator();
-                            }
-                            if (querySnapshot.data == null) {
-                              return Center(
-                                child: CupertinoActivityIndicator(),
-                              );
-                            }
-                            if (querySnapshot.data.size == 0) {
-                              return _noTransactions();
-                            } else {
-                              return ListView.builder(
-                                scrollDirection: Axis.vertical,
-                                physics: const BouncingScrollPhysics(
-                                    parent: AlwaysScrollableScrollPhysics()),
-                                shrinkWrap: true,
-                                itemCount: querySnapshot.data.docs.length,
-                                itemBuilder: (context, index) {
-                                  final DocumentSnapshot myTransaction =
-                                      querySnapshot.data.docs[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            color: myTransaction['Type'] ==
-                                                    'Income'
-                                                ? Colors.green[50]
-                                                : Colors.red[50],
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(16),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Icon(
-                                                  Icons.money,
-                                                  color: Colors.grey[700],
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(myTransaction['SOI'] ??
-                                                        'N/A'),
-                                                    Text(myTransaction[
-                                                            'SelectedDate'] ??
-                                                        'N/A'),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    myTransaction['Type'] ==
-                                                            'Income'
-                                                        ? Text(
-                                                            myTransaction[
-                                                                    'Amount'] ??
-                                                                'N/A',
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .green),
-                                                          )
-                                                        : Text(
-                                                            myTransaction[
-                                                                    'Amount'] ??
-                                                                'N/A',
-                                                            style: TextStyle(
-                                                                color: Colors
-                                                                    .redAccent),
-                                                          ),
-                                                    SizedBox(
-                                                      width: 16,
-                                                    ),
-                                                    Icon(
-                                                      CupertinoIcons
-                                                          .arrow_turn_down_right,
-                                                      color: Colors.grey[900],
-                                                    ),
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 10,
-                                        )
-                                      ],
+    return Scaffold(
+        body: Container(
+      width: size.width,
+      height: size.height,
+      child: Stack(
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sizedBoxVertical(),
+              _sizedBoxVertical(),
+              _headerWidget(),
+              _sizedBoxVertical(),
+              _sizedBoxVertical(),
+              _incomeWidget(),
+              _sizedBoxVertical(),
+              _catHScrolls(),
+              _sizedBoxVertical(),
+              _sizedBoxVertical(),
+              _recentTransactions(),
+              Expanded(
+                child: StreamBuilder<QuerySnapshot>(
+                    stream: _firStore
+                        .collection('Users')
+                        .doc(email)
+                        .collection('Transactions')
+                        .orderBy("TimeStamp", descending: true)
+                        .snapshots(),
+                    // ignore: missing_return
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> querySnapshot) {
+                      if (querySnapshot.hasError)
+                        return Center(child: Text('Has Error'));
+                      if (querySnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        CupertinoActivityIndicator();
+                      }
+                      if (querySnapshot.data == null) {
+                        return Center(
+                          child: CupertinoActivityIndicator(),
+                        );
+                      }
+                      if (querySnapshot.data.size == 0) {
+                        return _noTransactions();
+                      } else {
+                        return ListView.builder(
+                          scrollDirection: Axis.vertical,
+                          physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics()),
+                          shrinkWrap: true,
+                          itemCount: querySnapshot.data.docs.length,
+                          itemBuilder: (context, index) {
+                            final DocumentSnapshot myTransaction =
+                                querySnapshot.data.docs[index];
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: myTransaction['Type'] == 'Income'
+                                          ? Colors.green[50]
+                                          : Colors.red[50],
                                     ),
-                                  );
-                                },
-                              );
-                            }
-                          }),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Icon(
+                                            Icons.money,
+                                            color: Colors.grey[700],
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(myTransaction['SOI'] ??
+                                                  'N/A'),
+                                              Text(myTransaction[
+                                                      'SelectedDate'] ??
+                                                  'N/A'),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              myTransaction['Type'] == 'Income'
+                                                  ? Text(
+                                                      myTransaction['Amount'] ??
+                                                          'N/A',
+                                                      style: TextStyle(
+                                                          color: Colors.green),
+                                                    )
+                                                  : Text(
+                                                      myTransaction['Amount'] ??
+                                                          'N/A',
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.redAccent),
+                                                    ),
+                                              SizedBox(
+                                                width: 16,
+                                              ),
+                                              Icon(
+                                                CupertinoIcons
+                                                    .arrow_turn_down_right,
+                                                color: Colors.grey[900],
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    }),
+              ),
+            ],
+          ),
+          Positioned(
+              right: 20,
+              bottom: 30,
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: <Widget>[
+                  IgnorePointer(
+                    child: Container(
+                      color: Colors.transparent,
+                      height: 150.0,
+                      width: 150.0,
                     ),
-                  ],
-                ),
-                Positioned(
-                    right: 20,
-                    bottom: 30,
-                    child: Stack(
-                      alignment: Alignment.bottomRight,
-                      children: <Widget>[
-                        IgnorePointer(
-                          child: Container(
-                            color: Colors.transparent,
-                            height: 150.0,
-                            width: 150.0,
-                          ),
+                  ),
+                  Transform.translate(
+                    offset: Offset.fromDirection(getRadiansFromDegree(275),
+                        degOneTranslationAnimation.value * 100),
+                    child: Transform(
+                      transform: Matrix4.rotationZ(
+                          getRadiansFromDegree(rotationAnimation.value))
+                        ..scale(degOneTranslationAnimation.value),
+                      alignment: Alignment.center,
+                      child: CircularButton(
+                        color: Colors.amber,
+                        width: 50,
+                        height: 50,
+                        icon: Icon(
+                          CupertinoIcons.add_circled_solid,
+                          color: Colors.white,
                         ),
-                        Transform.translate(
-                          offset: Offset.fromDirection(
-                              getRadiansFromDegree(275),
-                              degOneTranslationAnimation.value * 100),
-                          child: Transform(
-                            transform: Matrix4.rotationZ(
-                                getRadiansFromDegree(rotationAnimation.value))
-                              ..scale(degOneTranslationAnimation.value),
-                            alignment: Alignment.center,
-                            child: CircularButton(
-                              color: Colors.amber,
-                              width: 50,
-                              height: 50,
-                              icon: Icon(
-                                CupertinoIcons.add_circled_solid,
-                                color: Colors.white,
-                              ),
-                              onClick: () {
-                                // context.navigator.push(AddTransactions()
-                                //     .vxPreviewRoute(parentContext: context));
-                                Get.to(() => AddTransactions());
-                                animationController.reverse();
-                              },
-                            ),
-                          ),
+                        onClick: () {
+                          // context.navigator.push(AddTransactions()
+                          //     .vxPreviewRoute(parentContext: context));
+                          Get.to(() => AddTransactions());
+                          animationController.reverse();
+                        },
+                      ),
+                    ),
+                  ),
+                  Transform.translate(
+                    offset: Offset.fromDirection(getRadiansFromDegree(240),
+                        degOneTranslationAnimation.value * 100),
+                    child: Transform(
+                      transform: Matrix4.rotationZ(
+                          getRadiansFromDegree(rotationAnimation.value))
+                        ..scale(degOneTranslationAnimation.value),
+                      alignment: Alignment.center,
+                      child: CircularButton(
+                        color: Colors.amber,
+                        width: 50,
+                        height: 50,
+                        icon: Icon(
+                          CupertinoIcons.doc,
+                          color: Colors.white,
                         ),
-                        Transform.translate(
-                          offset: Offset.fromDirection(
-                              getRadiansFromDegree(240),
-                              degOneTranslationAnimation.value * 100),
-                          child: Transform(
-                            transform: Matrix4.rotationZ(
-                                getRadiansFromDegree(rotationAnimation.value))
-                              ..scale(degOneTranslationAnimation.value),
-                            alignment: Alignment.center,
-                            child: CircularButton(
-                              color: Colors.amber,
-                              width: 50,
-                              height: 50,
-                              icon: Icon(
-                                CupertinoIcons.doc,
-                                color: Colors.white,
-                              ),
-                              onClick: () {
-                                // context.navigator.push(NotesPage()
-                                //     .vxPreviewRoute(parentContext: context));
-                                Get.to(() => NotesPage());
-                                animationController.reverse();
-                              },
-                            ),
-                          ),
+                        onClick: () {
+                          // context.navigator.push(NotesPage()
+                          //     .vxPreviewRoute(parentContext: context));
+                          Get.to(() => NotesPage());
+                          animationController.reverse();
+                        },
+                      ),
+                    ),
+                  ),
+                  Transform.translate(
+                    offset: Offset.fromDirection(getRadiansFromDegree(205),
+                        degTwoTranslationAnimation.value * 100),
+                    child: Transform(
+                      transform: Matrix4.rotationZ(
+                          getRadiansFromDegree(rotationAnimation.value))
+                        ..scale(degTwoTranslationAnimation.value),
+                      alignment: Alignment.center,
+                      child: CircularButton(
+                        color: Colors.amber,
+                        width: 50,
+                        height: 50,
+                        icon: Icon(
+                          CupertinoIcons.graph_circle,
+                          color: Colors.white,
                         ),
-                        Transform.translate(
-                          offset: Offset.fromDirection(
-                              getRadiansFromDegree(205),
-                              degTwoTranslationAnimation.value * 100),
-                          child: Transform(
-                            transform: Matrix4.rotationZ(
-                                getRadiansFromDegree(rotationAnimation.value))
-                              ..scale(degTwoTranslationAnimation.value),
-                            alignment: Alignment.center,
-                            child: CircularButton(
-                              color: Colors.amber,
-                              width: 50,
-                              height: 50,
-                              icon: Icon(
-                                CupertinoIcons.graph_circle,
-                                color: Colors.white,
-                              ),
-                              onClick: () {
-                                Get.to(() => AnalyticsPage());
-                                animationController.reverse();
-                              },
-                            ),
-                          ),
+                        onClick: () {
+                          Get.to(() => AnalyticsPage());
+                          animationController.reverse();
+                        },
+                      ),
+                    ),
+                  ),
+                  Transform.translate(
+                    offset: Offset.fromDirection(getRadiansFromDegree(170),
+                        degThreeTranslationAnimation.value * 100),
+                    child: Transform(
+                      transform: Matrix4.rotationZ(
+                          getRadiansFromDegree(rotationAnimation.value))
+                        ..scale(degThreeTranslationAnimation.value),
+                      alignment: Alignment.center,
+                      child: CircularButton(
+                        color: Colors.amber,
+                        width: 50,
+                        height: 50,
+                        icon: Icon(
+                          CupertinoIcons.settings,
+                          color: Colors.white,
                         ),
-                        Transform.translate(
-                          offset: Offset.fromDirection(
-                              getRadiansFromDegree(170),
-                              degThreeTranslationAnimation.value * 100),
-                          child: Transform(
-                            transform: Matrix4.rotationZ(
-                                getRadiansFromDegree(rotationAnimation.value))
-                              ..scale(degThreeTranslationAnimation.value),
-                            alignment: Alignment.center,
-                            child: CircularButton(
-                              color: Colors.amber,
-                              width: 50,
-                              height: 50,
-                              icon: Icon(
-                                CupertinoIcons.settings,
-                                color: Colors.white,
-                              ),
-                              onClick: () {
-                                Get.to(() => SettingsPage());
-                                animationController.reverse();
-                              },
-                            ),
-                          ),
-                        ),
-                        Transform(
-                          transform: Matrix4.rotationZ(
-                              getRadiansFromDegree(rotationAnimation.value)),
-                          alignment: Alignment.center,
-                          child: CircularButton(
-                            color: Colors.amber[200],
-                            width: 60,
-                            height: 60,
-                            icon: Icon(
-                              Icons.menu,
-                              color: Colors.black,
-                            ),
-                            onClick: () {
-                              if (animationController.isCompleted) {
-                                animationController.reverse();
-                              } else {
-                                animationController.forward();
-                              }
-                            },
-                          ),
-                        )
-                      ],
-                    ))
-              ],
-            ),
-          )),
-        );
-      },
-    );
+                        onClick: () {
+                          Get.to(() => SettingsPage());
+                          animationController.reverse();
+                        },
+                      ),
+                    ),
+                  ),
+                  Transform(
+                    transform: Matrix4.rotationZ(
+                        getRadiansFromDegree(rotationAnimation.value)),
+                    alignment: Alignment.center,
+                    child: CircularButton(
+                      color: Colors.amber[200],
+                      width: 60,
+                      height: 60,
+                      icon: Icon(
+                        Icons.menu,
+                        color: Colors.black,
+                      ),
+                      onClick: () {
+                        if (animationController.isCompleted) {
+                          animationController.reverse();
+                        } else {
+                          animationController.forward();
+                        }
+                      },
+                    ),
+                  )
+                ],
+              ))
+        ],
+      ),
+    ));
   }
 
   Widget _headerWidget() {
@@ -399,7 +380,7 @@ class _HomePageState extends State<HomePage>
                         shape: BoxShape.circle,
                         image: new DecorationImage(
                             fit: BoxFit.cover,
-                            image: _userController.photoUrl == ''
+                            image: _userController.photoUrl.toString().isEmpty
                                 ? AssetImage('assets/user_pic.png')
                                 : NetworkImage(
                                     _userController.photoUrl.toString()))));
@@ -465,7 +446,7 @@ class _HomePageState extends State<HomePage>
                       Text("₹"),
                       Obx(() {
                         return Text(
-                          _userController.totalBalance.toString(),
+                          _userController.totalIncome.toString(),
                           style: TextStyle(
                               color: Colors.green[500],
                               fontWeight: FontWeight.bold,
@@ -624,26 +605,27 @@ Widget _recentTransactions() {
     ],
   );
 }
+
 Widget _noTransactions() {
   return Container(
     child: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              "assets/no_transactions.gif",
-            ),
-            Text(
-              'No Transactions Found in your History',
-              style:
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset(
+          "assets/no_transactions.gif",
+        ),
+        Text(
+          'No Transactions Found in your History',
+          style:
               TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
-            ),
-            Text(
-              'Try create one and Save Money',
-              style:
+        ),
+        Text(
+          'Try create one and Save Money',
+          style:
               TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
-            ),
-          ],
-        )),
+        ),
+      ],
+    )),
   );
 }
