@@ -168,10 +168,11 @@ class _HomePageState extends State<HomePage>
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Icon(
-                                            Icons.money,
-                                            color: Colors.grey[700],
-                                          ),
+                                          Image(image: AssetImage("assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),width: 30,
+                                            height: 30,
+                                            color: null,
+                                            fit: BoxFit.cover,
+                                            alignment: Alignment.center,),
                                           Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
