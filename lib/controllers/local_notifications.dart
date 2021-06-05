@@ -1,15 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:money_mate/controllers/user_controller.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
+int totalIncome = 0, totalExpanse = 0;
+var controller = UserController();
 
 class LocalNotificationsController extends GetxController {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  //Initialize
+  var storage = GetStorage();
+  var email;
+
+  @override
+  void onInit() async {
+    email = storage.read('email');
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(email)
+        .collection('Transactions')
+        .get()
+        .then((value) async {
+      for (int i = 0; i < value.docs.length; i++) {
+        QueryDocumentSnapshot snapshot = value.docs[i];
+        if (snapshot['Type'] == 'Income')
+          totalIncome += int.parse(snapshot['Amount']);
+        else if (snapshot['Type'] == 'Expanse')
+          totalExpanse += int.parse(snapshot['Amount']);
+      }
+    });
+    super.onInit();
+  } //Initialize
+
   Future initialize() async {
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
@@ -27,6 +55,7 @@ class LocalNotificationsController extends GetxController {
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
+
 
   Future<void> configureLocalTimeZone() async {
     tz.initializeTimeZones();
@@ -51,8 +80,8 @@ class LocalNotificationsController extends GetxController {
   //Image notification
   Future imageNotification() async {
     var bigPicture = BigPictureStyleInformation(
-        DrawableResourceAndroidBitmap("ic_launcher"),
-        largeIcon: DrawableResourceAndroidBitmap("ic_launcher"),
+        DrawableResourceAndroidBitmap("notify_icon"),
+        largeIcon: DrawableResourceAndroidBitmap("notify_icon"),
         contentTitle: "Demo image notification",
         summaryText: "This is some text",
         htmlFormatContent: true,
@@ -69,7 +98,8 @@ class LocalNotificationsController extends GetxController {
   }
 
   //Stylish Notification
-  Future stylishNotification() async {
+  Future stylishNotification(
+      RxInt totalIncome, RxInt totalExpanse, RxInt totalBalance) async {
     var android = AndroidNotificationDetails("id", "channel", "description",
         importance: Importance.max,
         priority: Priority.high,
@@ -85,7 +115,10 @@ class LocalNotificationsController extends GetxController {
     var platform = new NotificationDetails(android: android);
 
     await _flutterLocalNotificationsPlugin.show(
-        0, "Demo Stylish notification", "Tap to do something", platform);
+        0,
+        "Available Balance ${totalIncome.value - totalExpanse.value}",
+        "Total spend $totalExpanse",
+        platform);
   }
 
   //Scheduled Notification
@@ -123,17 +156,18 @@ class LocalNotificationsController extends GetxController {
   }
 
 // notification for daily at time
-  Future scheduleDailyTenAMNotification() async {
-    await _flutterLocalNotificationsPlugin.zonedSchedule(
+  Future scheduleDailyTenAMNotification() {
+    return _flutterLocalNotificationsPlugin.zonedSchedule(
         0,
-        'Good Evening',
-        'Have you done any payments Today. Note now!',
+        'I hope you had an Amazing day!!',
+        'Have you done Any Transactions Today?. Note it now!',
         nextInstanceOfTenAM(),
         const NotificationDetails(
           android: AndroidNotificationDetails(
-              'daily notification channel id',
-              'daily notification channel name',
-              'daily notification description'),
+            'daily notification channel id',
+            'daily notification channel name',
+            'daily notification description',
+          ),
         ),
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation:
@@ -144,7 +178,7 @@ class LocalNotificationsController extends GetxController {
   tz.TZDateTime nextInstanceOfTenAM() {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, 11);
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, 15, 30);
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }

@@ -25,6 +25,7 @@ class HomePage extends StatefulWidget {
 var storage = GetStorage();
 final _firStore = FirebaseFirestore.instance;
 var email = storage.read('email');
+
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   AnimationController animationController;
@@ -77,16 +78,14 @@ class _HomePageState extends State<HomePage>
     });
     _userController.getUser();
     _controller.initialize();
+    setState(() {});
     _controller.configureLocalTimeZone();
     _controller.nextInstanceOfTenAM();
-    _controller.scheduleDailyTenAMNotification();
     _userController.totalExpanse = 0.obs;
     _userController.totalIncome = 0.obs;
     _userController.totalAmountCalculations();
+    _controller.scheduleDailyTenAMNotification();
   }
-
-  double totalIncome = 0, totalExpanse = 0;
-  ContainerTransitionType _transitionType = ContainerTransitionType.fade;
 
   @override
   Widget build(BuildContext context) {
@@ -168,11 +167,15 @@ class _HomePageState extends State<HomePage>
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Image(image: AssetImage("assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),width: 30,
+                                          Image(
+                                            image: AssetImage(
+                                                "assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),
+                                            width: 30,
                                             height: 30,
                                             color: null,
                                             fit: BoxFit.cover,
-                                            alignment: Alignment.center,),
+                                            alignment: Alignment.center,
+                                          ),
                                           Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -493,8 +496,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 }
-
-
 
 Widget _sizedBoxVertical() {
   return SizedBox(
