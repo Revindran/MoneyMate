@@ -17,8 +17,8 @@ void main() async {
       SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent));
   await Firebase.initializeApp();
   await GetStorage.init();
-  Get.put<LocalNotificationsController>(LocalNotificationsController());
   Get.put(UserController());
+  Get.put<LocalNotificationsController>(LocalNotificationsController());
   var storage = GetStorage();
   var uMail = storage.read('email');
   print(uMail);
@@ -29,7 +29,7 @@ void main() async {
     initialRoute: '/',
     routes: {
       '/home': (context) => HomePage(),
-      '/analytics': (context) => AnalyticsPage(),
+      // '/analytics': (context) => MyHomePage(),
       '/notes': (context) => NotesPage(),
       '/settings': (context) => SettingsPage(),
     },

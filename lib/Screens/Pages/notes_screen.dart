@@ -25,50 +25,41 @@ class _NotesPageState extends State<NotesPage> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Navigator(
-      key: ValueKey(_transitionType),
-      onGenerateRoute: (settings) {
-        return MaterialPageRoute<void>(
-          builder: (context) => Scaffold(
-            appBar: AppBar(
-              title: Text('Notes',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
-              centerTitle: true,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            ),
-            body: ShowNotes(),
-            floatingActionButton: OpenContainer(
-              transitionType: _transitionType,
-              openBuilder: (context, openContainer) => AddNotesPage(),
-              closedElevation: 6,
-              closedShape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(_fabDimension / 2),
-                ),
-              ),
-              closedColor: Colors.amber[200],
-              closedBuilder: (context, openContainer) {
-                return SizedBox(
-                  height: _fabDimension,
-                  width: _fabDimension,
-                  child: Center(
-                    child: Icon(
-                      CupertinoIcons.doc_on_doc,
-                      color: colorScheme.onSecondary,
-                    ),
-                  ),
-                );
-              },
-            ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Notes',
+          style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: ShowNotes(),
+      floatingActionButton: OpenContainer(
+        transitionType: _transitionType,
+        openBuilder: (context, openContainer) => AddNotesPage(),
+        closedElevation: 6,
+        closedShape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(_fabDimension / 2),
           ),
-        );
-      },
+        ),
+        closedColor: Colors.amber[200],
+        closedBuilder: (context, openContainer) {
+          return SizedBox(
+            height: _fabDimension,
+            width: _fabDimension,
+            child: Center(
+              child: Icon(
+                CupertinoIcons.doc_on_doc,
+                color: colorScheme.onSecondary,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
-
-
-
-
-
-

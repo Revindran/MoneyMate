@@ -65,7 +65,6 @@ class UserController extends GetxController {
           totalIncome += int.parse(snapshot['Amount']);
         else if (snapshot['Type'] == 'Expanse')
           totalExpanse += int.parse(snapshot['Amount']);
-
         update();
       }
     });

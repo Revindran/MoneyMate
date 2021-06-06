@@ -18,6 +18,8 @@ class _AddTransactionsState extends State<AddTransactions> {
   DateTime selectedDate = DateTime.now();
   var storage = GetStorage();
   var email;
+  var isAlreadyAddedMoney;
+  var isAlreadyAddedMoneyEmpty;
   String itemSelected = "", sDate, selCategory, _dropMemoryDownValue;
   var selectedItem = 0;
   final _controller = Get.put<CatController>(CatController());
@@ -26,6 +28,7 @@ class _AddTransactionsState extends State<AddTransactions> {
 
   @override
   Widget build(BuildContext context) {
+    email = storage.read('email');
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -127,7 +130,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                   ),
                   SizedBox(height: 10),
                   InkWell(
-                    onTap: ()=>_catType(),
+                    onTap: () => _catType(),
                     child: Container(
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
@@ -163,16 +166,21 @@ class _AddTransactionsState extends State<AddTransactions> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.calendar_today_outlined,color: Colors.grey[600],size: 18,),
-                            SizedBox(width: 16,),// Refer step 3
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              color: Colors.grey[600],
+                              size: 18,
+                            ),
+                            SizedBox(
+                              width: 16,
+                            ), // Refer step 3
                             Text(
                               "${selectedDate.toLocal()}".split(' ')[0],
                               style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
                                   color: Colors.grey[600],
-                                  fontStyle: FontStyle.italic
-                              ),
+                                  fontStyle: FontStyle.italic),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -239,13 +247,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                                       'Please select the Category type to continue',
                                       snackPosition: SnackPosition.BOTTOM);
                                 } else {
-                                  addIncome().then((value) {
-                                    setState(() {
-                                      _dropMemoryDownValue = "";
-                                      amountString.clear();
-                                      sofIncome.clear();
-                                    });
-                                  });
+                                  addIncome();
                                 }
                               },
                             ),
@@ -273,7 +275,7 @@ class _AddTransactionsState extends State<AddTransactions> {
       });
   }
 
-  _catType(){
+  _catType() {
     return showModalBottomSheet(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
@@ -290,8 +292,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                     Text(
                       'Select Category',
                       style: TextStyle(
-                          color: Colors.grey[600],
-                          fontStyle: FontStyle.italic),
+                          color: Colors.grey[600], fontStyle: FontStyle.italic),
                     ),
                     SizedBox(height: 10),
                     Container(
@@ -299,46 +300,35 @@ class _AddTransactionsState extends State<AddTransactions> {
                       height: Get.height / 2.5,
                       child: GridView.builder(
                         itemCount: _controller.catList.length,
-                        gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
                             crossAxisSpacing: 10,
                             mainAxisSpacing: 10),
                         itemBuilder: (context, index) {
                           return GestureDetector(
                             onTap: () => {
-                              onCange(
-                                  s: _controller
-                                      .catList[index].index),
+                              onCange(s: _controller.catList[index].index),
                               Get.back(),
                             },
                             child: Column(
                               children: [
                                 Container(
                                   decoration: BoxDecoration(
-                                      borderRadius:
-                                      BorderRadius.circular(
-                                          100),
-                                      color: _controller
-                                          .catList[
-                                      selectedItem] ==
-                                          _controller
-                                              .catList[
-                                          index]
-                                          ? Colors.grey[200]
-                                          : Colors.white),
+                                      borderRadius: BorderRadius.circular(100),
+                                      color:
+                                          _controller.catList[selectedItem] ==
+                                                  _controller.catList[index]
+                                              ? Colors.grey[200]
+                                              : Colors.white),
                                   child: Padding(
                                     padding: EdgeInsets.all(16),
-                                    child: _controller
-                                        .catList[index].icon,
+                                    child: _controller.catList[index].icon,
                                   ),
                                 ),
                                 Text(
-                                  _controller
-                                      .catList[index].title,
+                                  _controller.catList[index].title,
                                   style: TextStyle(
-                                      fontStyle:
-                                      FontStyle.italic,
+                                      fontStyle: FontStyle.italic,
                                       color: Colors.grey[500]),
                                 ),
                               ],
@@ -357,7 +347,6 @@ class _AddTransactionsState extends State<AddTransactions> {
 
   Future<void> addIncome() async {
     isLoading = true;
-    email = storage.read('email');
     Map<String, dynamic> dataA = {
       "Income": amountString,
     };
@@ -379,6 +368,7 @@ class _AddTransactionsState extends State<AddTransactions> {
       setState(() {
         isLoading = false;
       });
+      _dropMemoryDownValue == 'Income' ? incomeGraph() : expenseGraph();
       Get.off(() => HomePage());
       Get.snackbar('Upload Successful', 'Upload Successful',
           duration: Duration(seconds: 2), snackPosition: SnackPosition.BOTTOM);
@@ -395,6 +385,58 @@ class _AddTransactionsState extends State<AddTransactions> {
   void onCange({int s}) {
     setState(() {
       selectedItem = s;
+    });
+  }
+
+  Future<void> incomeGraph() async {
+    isAlreadyAdded(_dropMemoryDownValue,
+        _controller.catList[selectedItem].title.toString());
+    Map<String, dynamic> data = {
+      "Amount": int.parse(amountString.text),
+      "SOI": sofIncome.text,
+      "SelectedDate": "${selectedDate.toLocal()}".split(' ')[0],
+      "TimeStamp": DateTime.now(),
+      "Category": _controller.catList[selectedItem].title.toString(),
+      "Type": _dropMemoryDownValue,
+    };
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(email)
+        .collection("IncomeGraph")
+        .doc(_controller.catList[selectedItem].title.toString())
+        .set(data);
+  }
+
+  Future<void> expenseGraph() async {
+    Map<String, dynamic> data = {
+      "Amount": int.parse(amountString.text),
+      "SOI": sofIncome.text,
+      "SelectedDate": "${selectedDate.toLocal()}".split(' ')[0],
+      "TimeStamp": DateTime.now(),
+      "Category": _controller.catList[selectedItem].title.toString(),
+      "Type": _dropMemoryDownValue,
+    };
+    await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(email)
+        .collection("ExpenseGraph")
+        .doc(_controller.catList[selectedItem].title.toString())
+        .set(data);
+  }
+
+  isAlreadyAdded(String collection, String category) {
+    collection == 'Income' ? 'IncomeGraph' : 'ExpenseGraph';
+    FirebaseFirestore.instance
+        .collection('Users')
+        .doc(email)
+        .collection(collection)
+        .doc(category)
+        .get()
+        .then((value) {
+      isAlreadyAddedMoney = value['Amount'];
+    }).then((value) {
+      isAlreadyAddedMoneyEmpty = isAlreadyAddedMoney;
+      print(isAlreadyAddedMoneyEmpty);
     });
   }
 }

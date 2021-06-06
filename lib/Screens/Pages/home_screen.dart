@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Components/circular_menu.dart';
-import 'package:money_mate/Screens/Pages/analytics_screen.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
 import 'package:money_mate/controllers/local_notifications.dart';
 import 'package:money_mate/controllers/user_controller.dart';
+import 'package:money_mate/inocme_expence_chart/monthly_expenses_view.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/gestures.dart';
 import 'add_transactions.dart';
+import 'analytics_screen.dart';
 import 'notes_screen.dart';
 
 const double _fabDimension = 56;
@@ -105,9 +106,6 @@ class _HomePageState extends State<HomePage>
               _sizedBoxVertical(),
               _sizedBoxVertical(),
               _incomeWidget(),
-              _sizedBoxVertical(),
-              _catHScrolls(),
-              _sizedBoxVertical(),
               _sizedBoxVertical(),
               _recentTransactions(),
               Expanded(
@@ -285,8 +283,6 @@ class _HomePageState extends State<HomePage>
                           color: Colors.white,
                         ),
                         onClick: () {
-                          // context.navigator.push(NotesPage()
-                          //     .vxPreviewRoute(parentContext: context));
                           Get.to(() => NotesPage());
                           animationController.reverse();
                         },
@@ -310,7 +306,7 @@ class _HomePageState extends State<HomePage>
                           color: Colors.white,
                         ),
                         onClick: () {
-                          Get.to(() => AnalyticsPage());
+                          Get.to(() => AnalyticsScreen());
                           animationController.reverse();
                         },
                       ),
@@ -545,7 +541,7 @@ Widget _catHScrolls() {
               );
             } else {
               return Container(
-                height: 115,
+                height: 150,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(
@@ -574,6 +570,12 @@ Widget _catHScrolls() {
                               ),
                               Text(
                                 myTransaction['Category'] ?? 'N/A',
+                                style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                myTransaction['Amount'] ?? 'N/A',
                                 style: TextStyle(
                                     color: Colors.grey[600],
                                     fontWeight: FontWeight.w600),
