@@ -30,10 +30,7 @@ dependencies:
   flutter_native_timezone: ^1.1.0
   shimmer: ^2.0.0
   file_picker: ^3.0.2+2
-  charts_flutter: ^0.10.0
-  http:
-  syncfusion_flutter_charts: ^19.1.66+1
-  google_fonts:
+  google_fonts: ^2.1.0
 
 dev_dependencies:
   flutter_test:

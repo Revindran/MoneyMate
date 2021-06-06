@@ -5,10 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:money_mate/inocme_expence_chart/categories_row.dart';
 import 'package:money_mate/inocme_expence_chart/pie_chart_view.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 var storage = GetStorage();
 final _firStore = FirebaseFirestore.instance;
