@@ -1,20 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:money_mate/Components/circular_menu.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
 import 'package:money_mate/controllers/admob_service.dart';
 import 'package:money_mate/controllers/local_notifications.dart';
 import 'package:money_mate/controllers/user_controller.dart';
 import 'package:shimmer/shimmer.dart';
-
-import 'add_transactions.dart';
-import 'analytics_screen.dart';
-import 'notes_screen.dart';
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {
@@ -47,6 +41,7 @@ class _HomePageState extends State<HomePage>
 
   final _controller = Get.find<LocalNotificationsController>();
   final UserController _userController = Get.find();
+  final AdMobService _service = new AdMobService();
 
   @override
   void initState() {
@@ -85,6 +80,8 @@ class _HomePageState extends State<HomePage>
     _userController.totalIncome = 0.obs;
     _userController.totalAmountCalculations();
     _controller.scheduleDailyTenAMNotification();
+
+    _service.createInterstitial();
   }
 
   @override
@@ -119,13 +116,6 @@ class _HomePageState extends State<HomePage>
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> querySnapshot) {
                     List<Object> itemList;
-                    itemList = List.from(querySnapshot.data!.docs);
-                    for (int i = querySnapshot.data!.docs.length - 2;
-                        i >= 1;
-                        i -= 2) {
-                      itemList.insert(i, AdMobService.createBannerAd()..load());
-                    }
-
                     if (querySnapshot.hasError)
                       return Center(child: Text('Has Error'));
                     if (querySnapshot.connectionState ==
@@ -136,6 +126,13 @@ class _HomePageState extends State<HomePage>
                       return Center(
                         child: CupertinoActivityIndicator(),
                       );
+                    }
+
+                    itemList = List.from(querySnapshot.data!.docs);
+                    for (int i = querySnapshot.data!.docs.length - 3;
+                        i >= 1;
+                        i -= 3) {
+                      itemList.insert(i, AdMobService.createBannerAd()..load());
                     }
                     if (itemList.length == 0) {
                       return _noTransactions();
@@ -151,83 +148,90 @@ class _HomePageState extends State<HomePage>
                           if (itemList[index] is DocumentSnapshot) {
                             final DocumentSnapshot myTransaction =
                                 itemList[index] as DocumentSnapshot;
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Column(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: myTransaction['Type'] == 'Income'
-                                          ? Colors.green[50]
-                                          : Colors.red[50],
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Image(
-                                            image: AssetImage(
-                                                "assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),
-                                            width: 30,
-                                            height: 30,
-                                            color: null,
-                                            fit: BoxFit.cover,
-                                            alignment: Alignment.center,
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(myTransaction['SOI'] ??
-                                                  'N/A'),
-                                              Text(myTransaction[
-                                                      'SelectedDate'] ??
-                                                  'N/A'),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              myTransaction['Type'] == 'Income'
-                                                  ? Text(
-                                                      myTransaction['Amount'] ??
-                                                          'N/A',
-                                                      style: TextStyle(
-                                                          color: Colors.green),
-                                                    )
-                                                  : Text(
-                                                      myTransaction['Amount'] ??
-                                                          'N/A',
-                                                      style: TextStyle(
-                                                          color:
-                                                              Colors.redAccent),
-                                                    ),
-                                              SizedBox(
-                                                width: 16,
-                                              ),
-                                              Icon(
-                                                CupertinoIcons
-                                                    .arrow_turn_down_right,
-                                                color: Colors.grey[900],
-                                              ),
-                                            ],
-                                          )
-                                        ],
+                            return InkWell(
+                              onTap: () => {_service.showInterstitial()},
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 10),
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: myTransaction['Type'] == 'Income'
+                                            ? Colors.green[50]
+                                            : Colors.red[50],
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Image(
+                                              image: AssetImage(
+                                                  "assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),
+                                              width: 30,
+                                              height: 30,
+                                              color: null,
+                                              fit: BoxFit.cover,
+                                              alignment: Alignment.center,
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(myTransaction['SOI'] ??
+                                                    'N/A'),
+                                                Text(myTransaction[
+                                                        'SelectedDate'] ??
+                                                    'N/A'),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                myTransaction['Type'] ==
+                                                        'Income'
+                                                    ? Text(
+                                                        myTransaction[
+                                                                'Amount'] ??
+                                                            'N/A',
+                                                        style: TextStyle(
+                                                            color:
+                                                                Colors.green),
+                                                      )
+                                                    : Text(
+                                                        myTransaction[
+                                                                'Amount'] ??
+                                                            'N/A',
+                                                        style: TextStyle(
+                                                            color: Colors
+                                                                .redAccent),
+                                                      ),
+                                                SizedBox(
+                                                  width: 16,
+                                                ),
+                                                Icon(
+                                                  CupertinoIcons
+                                                      .arrow_turn_down_right,
+                                                  color: Colors.grey[900],
+                                                ),
+                                              ],
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(
-                                    height: 10,
-                                  )
-                                ],
+                                    SizedBox(
+                                      height: 10,
+                                    )
+                                  ],
+                                ),
                               ),
                             );
                           } else if (itemList[index] is BannerAd) {
@@ -251,139 +255,138 @@ class _HomePageState extends State<HomePage>
               ),
             ],
           ),
-          Positioned(
-              right: 20,
-              bottom: 30,
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: <Widget>[
-                  IgnorePointer(
-                    child: Container(
-                      color: Colors.transparent,
-                      height: 150.0,
-                      width: 150.0,
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: Offset.fromDirection(getRadiansFromDegree(275),
-                        degOneTranslationAnimation.value * 100),
-                    child: Transform(
-                      transform: Matrix4.rotationZ(
-                          getRadiansFromDegree(rotationAnimation.value))
-                        ..scale(degOneTranslationAnimation.value),
-                      alignment: Alignment.center,
-                      child: CircularButton(
-                        color: Colors.amber,
-                        width: 50,
-                        height: 50,
-                        icon: Icon(
-                          CupertinoIcons.add_circled_solid,
-                          color: Colors.white,
-                        ),
-                        onClick: () {
-                          // context.navigator.push(AddTransactions()
-                          //     .vxPreviewRoute(parentContext: context));
-                          Get.to(() => AddTransactions());
-                          animationController.reverse();
-                        },
-                      ),
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: Offset.fromDirection(getRadiansFromDegree(240),
-                        degOneTranslationAnimation.value * 100),
-                    child: Transform(
-                      transform: Matrix4.rotationZ(
-                          getRadiansFromDegree(rotationAnimation.value))
-                        ..scale(degOneTranslationAnimation.value),
-                      alignment: Alignment.center,
-                      child: CircularButton(
-                        color: Colors.amber,
-                        width: 50,
-                        height: 50,
-                        icon: Icon(
-                          CupertinoIcons.doc,
-                          color: Colors.white,
-                        ),
-                        onClick: () {
-                          Get.to(() => NotesPage());
-                          animationController.reverse();
-                        },
-                      ),
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: Offset.fromDirection(getRadiansFromDegree(205),
-                        degTwoTranslationAnimation.value * 100),
-                    child: Transform(
-                      transform: Matrix4.rotationZ(
-                          getRadiansFromDegree(rotationAnimation.value))
-                        ..scale(degTwoTranslationAnimation.value),
-                      alignment: Alignment.center,
-                      child: CircularButton(
-                        color: Colors.amber,
-                        width: 50,
-                        height: 50,
-                        icon: Icon(
-                          CupertinoIcons.graph_circle,
-                          color: Colors.white,
-                        ),
-                        onClick: () {
-                          Get.to(() => AnalyticsScreen());
-                          animationController.reverse();
-                        },
-                      ),
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: Offset.fromDirection(getRadiansFromDegree(170),
-                        degThreeTranslationAnimation.value * 100),
-                    child: Transform(
-                      transform: Matrix4.rotationZ(
-                          getRadiansFromDegree(rotationAnimation.value))
-                        ..scale(degThreeTranslationAnimation.value),
-                      alignment: Alignment.center,
-                      child: CircularButton(
-                        color: Colors.amber,
-                        width: 50,
-                        height: 50,
-                        icon: Icon(
-                          CupertinoIcons.settings,
-                          color: Colors.white,
-                        ),
-                        onClick: () {
-                          Get.to(() => SettingsPage());
-                          animationController.reverse();
-                        },
-                      ),
-                    ),
-                  ),
-                  Transform(
-                    transform: Matrix4.rotationZ(
-                        getRadiansFromDegree(rotationAnimation.value)),
-                    alignment: Alignment.center,
-                    child: CircularButton(
-                      color: Colors.amber[200] as Color,
-                      width: 60,
-                      height: 60,
-                      icon: Icon(
-                        Icons.menu,
-                        color: Colors.black,
-                      ),
-                      onClick: () {
-                        if (animationController.isCompleted) {
-                          animationController.reverse();
-                        } else {
-                          animationController.forward();
-                        }
-                      },
-                    ),
-                  )
-                ],
-              ))
+          // Positioned(
+          //     right: 20,
+          //     bottom: 30,
+          //     child: Stack(
+          //       alignment: Alignment.bottomRight,
+          //       children: <Widget>[
+          //         IgnorePointer(
+          //           child: Container(
+          //             color: Colors.transparent,
+          //             height: 150.0,
+          //             width: 150.0,
+          //           ),
+          //         ),
+          //         Transform.translate(
+          //           offset: Offset.fromDirection(getRadiansFromDegree(275),
+          //               degOneTranslationAnimation.value * 100),
+          //           child: Transform(
+          //             transform: Matrix4.rotationZ(
+          //                 getRadiansFromDegree(rotationAnimation.value))
+          //               ..scale(degOneTranslationAnimation.value),
+          //             alignment: Alignment.center,
+          //             child: CircularButton(
+          //               color: Colors.amber,
+          //               width: 50,
+          //               height: 50,
+          //               icon: Icon(
+          //                 CupertinoIcons.add_circled_solid,
+          //                 color: Colors.white,
+          //               ),
+          //               onClick: () => {
+          //                 Get.to(() => AddTransactions()),
+          //                 animationController.reverse()
+          //               },
+          //             ),
+          //           ),
+          //         ),
+          //         Transform.translate(
+          //           offset: Offset.fromDirection(getRadiansFromDegree(240),
+          //               degOneTranslationAnimation.value * 100),
+          //           child: Transform(
+          //             transform: Matrix4.rotationZ(
+          //                 getRadiansFromDegree(rotationAnimation.value))
+          //               ..scale(degOneTranslationAnimation.value),
+          //             alignment: Alignment.center,
+          //             child: CircularButton(
+          //               color: Colors.amber,
+          //               width: 50,
+          //               height: 50,
+          //               icon: Icon(
+          //                 CupertinoIcons.doc,
+          //                 color: Colors.white,
+          //               ),
+          //               onClick: () {
+          //                 Get.to(() => NotesPage());
+          //                 animationController.reverse();
+          //               },
+          //             ),
+          //           ),
+          //         ),
+          //         Transform.translate(
+          //           offset: Offset.fromDirection(getRadiansFromDegree(205),
+          //               degTwoTranslationAnimation.value * 100),
+          //           child: Transform(
+          //             transform: Matrix4.rotationZ(
+          //                 getRadiansFromDegree(rotationAnimation.value))
+          //               ..scale(degTwoTranslationAnimation.value),
+          //             alignment: Alignment.center,
+          //             child: CircularButton(
+          //               color: Colors.amber,
+          //               width: 50,
+          //               height: 50,
+          //               icon: Icon(
+          //                 CupertinoIcons.graph_circle,
+          //                 color: Colors.white,
+          //               ),
+          //               onClick: () {
+          //                 Get.to(() => AnalyticsScreen());
+          //                 animationController.reverse();
+          //               },
+          //             ),
+          //           ),
+          //         ),
+          //         Transform.translate(
+          //           offset: Offset.fromDirection(getRadiansFromDegree(170),
+          //               degThreeTranslationAnimation.value * 100),
+          //           child: Transform(
+          //             transform: Matrix4.rotationZ(
+          //                 getRadiansFromDegree(rotationAnimation.value))
+          //               ..scale(degThreeTranslationAnimation.value),
+          //             alignment: Alignment.center,
+          //             child: CircularButton(
+          //               color: Colors.amber,
+          //               width: 50,
+          //               height: 50,
+          //               icon: Icon(
+          //                 CupertinoIcons.settings,
+          //                 color: Colors.white,
+          //               ),
+          //               onClick: () {
+          //                 Get.to(() => SettingsPage());
+          //                 animationController.reverse();
+          //               },
+          //             ),
+          //           ),
+          //         ),
+          //         Transform(
+          //           transform: Matrix4.rotationZ(
+          //               getRadiansFromDegree(rotationAnimation.value)),
+          //           alignment: Alignment.center,
+          //           child: CircularButton(
+          //               color: Colors.amber,
+          //               width: 60,
+          //               height: 60,
+          //               icon: Icon(
+          //                 Icons.menu,
+          //                 color: Colors.black,
+          //               ),
+          //               onClick: () => click()),
+          //         )
+          //       ],
+          //     ))
         ],
       ),
     ));
+  }
+
+  void click() {
+    print('Clicked');
+    if (animationController.isCompleted)
+      animationController.reverse();
+    else
+      animationController.forward();
   }
 
   Widget _headerWidget() {

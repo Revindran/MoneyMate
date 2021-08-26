@@ -74,101 +74,105 @@ Widget _sizedBoxVertical() {
 }
 
 Widget _catHScrolls() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          "Your Recent Categories",
-          style: TextStyle(
-              color: Colors.grey[800],
-              fontWeight: FontWeight.w500,
-              fontStyle: FontStyle.italic,
-              fontSize: 16),
+  return Expanded(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 20),
+          child: Text(
+            "Your Recent Categories",
+            style: TextStyle(
+                color: Colors.grey[800],
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+                fontSize: 16),
+          ),
         ),
-      ),
-      _sizedBoxVertical(),
-      StreamBuilder<QuerySnapshot>(
-          stream: _firStore
-              .collection('Users')
-              .doc(email)
-              .collection('Transactions')
-              .orderBy("TimeStamp", descending: true)
-              .snapshots(),
-          // ignore: missing_return
-          builder: (BuildContext context,
-              AsyncSnapshot<QuerySnapshot> querySnapshot) {
-            if (querySnapshot.hasError) return Center(child: Text('Has Error'));
-            if (querySnapshot.connectionState == ConnectionState.waiting) {
-              CupertinoActivityIndicator();
-            }
-            if (querySnapshot.data == null) {
-              return Center(
-                child: Text('Error:|'),
-              );
-            }
-            if (querySnapshot.data!.size == 0) {
-              return _noTransactions();
-            } else {
-              return Container(
-                height: Get.height / 1.8,
-                child: GridView.builder(
-                  itemCount: querySnapshot.data!.docs.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 10),
-                  itemBuilder: (context, index) {
-                    final DocumentSnapshot myTransaction =
-                        querySnapshot.data!.docs[index];
-                    return Container(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                  color: Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(100)),
-                              child: Image(
-                                image: AssetImage(
-                                    "assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),
-                                width: 30,
-                                height: 30,
-                                color: null,
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
+        _sizedBoxVertical(),
+        Expanded(
+          child: StreamBuilder<QuerySnapshot>(
+              stream: _firStore
+                  .collection('Users')
+                  .doc(email)
+                  .collection('Transactions')
+                  .orderBy("TimeStamp", descending: true)
+                  .snapshots(),
+              // ignore: missing_return
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> querySnapshot) {
+                if (querySnapshot.hasError) return Center(child: Text('Has Error'));
+                if (querySnapshot.connectionState == ConnectionState.waiting) {
+                  CupertinoActivityIndicator();
+                }
+                if (querySnapshot.data == null) {
+                  return Center(
+                    child: Text('Error:|'),
+                  );
+                }
+                if (querySnapshot.data!.size == 0) {
+                  return _noTransactions();
+                } else {
+                  return Container(
+                    height: Get.height / 1.8,
+                    child: GridView.builder(
+                      itemCount: querySnapshot.data!.docs.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 10),
+                      itemBuilder: (context, index) {
+                        final DocumentSnapshot myTransaction =
+                            querySnapshot.data!.docs[index];
+                        return Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(100)),
+                                  child: Image(
+                                    image: AssetImage(
+                                        "assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),
+                                    width: 30,
+                                    height: 30,
+                                    color: null,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
+                                  ),
+                                ),
                               ),
-                            ),
+                              Text(
+                                myTransaction['Category'] ?? 'N/A',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              Text(
+                                "₹ " + myTransaction['Amount'],
+                                style: TextStyle(
+                                    color: myTransaction['Type'] == 'Income'
+                                        ? Colors.green[500]
+                                        : Colors.red[500],
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
                           ),
-                          Text(
-                            myTransaction['Category'] ?? 'N/A',
-                            style: TextStyle(
-                              fontSize: 8,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                          Text(
-                            "₹ " + myTransaction['Amount'],
-                            style: TextStyle(
-                                color: myTransaction['Type'] == 'Income'
-                                    ? Colors.green[500]
-                                    : Colors.red[500],
-                                fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              );
-            }
-          }),
-    ],
+                        );
+                      },
+                    ),
+                  );
+                }
+              }),
+        ),
+      ],
+    ),
   );
 }
 

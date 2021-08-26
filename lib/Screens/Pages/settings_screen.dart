@@ -3,9 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:money_mate/Screens/Auth/reset_password_ui.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
 import 'package:money_mate/Screens/Pages/transaction_history.dart';
+import 'package:money_mate/controllers/admob_service.dart';
 import 'package:money_mate/controllers/user_controller.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -20,56 +22,48 @@ class SettingsPage extends StatelessWidget {
         body: Center(
       child: Column(
         children: [
-          Container(
-              padding: EdgeInsets.only(top: 40, right: 20, left: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back)),
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: InkWell(
-                      onTap: () {
-                        FirebaseAuth.instance.signOut();
-                        storage.remove('email');
-                        Get.offAll(() => SignInPage());
-                      },
-                      child: Container(
-                        width: 88,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.grey[100]),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Text(
-                                'Log Out',
-                                style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              Icon(
-                                Icons.login_outlined,
-                                color: Colors.grey[500],
-                                size: 20,
-                              )
-                            ],
-                          ),
+          Padding(
+            padding: const EdgeInsets.all(25.0),
+            child: Align(
+              alignment: Alignment.topRight,
+              child: InkWell(
+                onTap: () {
+                  FirebaseAuth.instance.signOut();
+                  storage.remove('email');
+                  Get.offAll(() => SignInPage());
+                },
+                child: Container(
+                  width: 88,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.grey[100]),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          'Log Out',
+                          style: TextStyle(
+                              color: Colors.grey[500],
+                              fontWeight: FontWeight.w500),
                         ),
-                      ),
+                        Icon(
+                          Icons.login_outlined,
+                          color: Colors.grey[500],
+                          size: 20,
+                        )
+                      ],
                     ),
                   ),
-                ],
-              )),
+                ),
+              ),
+            ),
+          ),
           SizedBox(
             height: Get.height / 35,
           ),
           InkWell(
-            onTap: () => _userController.getPhotoAndUpload(),
+            // onTap: () => _userController.getPhotoAndUpload(),
             child: Hero(
               tag: 'tag',
               child: GetBuilder<UserController>(builder: (_) {
@@ -79,9 +73,8 @@ class SettingsPage extends StatelessWidget {
                   decoration: new BoxDecoration(
                     shape: BoxShape.circle,
                     image: new DecorationImage(
-                      fit: BoxFit.contain,
-                      image: AssetImage('assets/user_pic.png')
-                    ),
+                        fit: BoxFit.contain,
+                        image: AssetImage('assets/user_pic.png')),
                   ),
                 );
               }),
@@ -338,6 +331,13 @@ class SettingsPage extends StatelessWidget {
             ],
           ),
           _sizedBoxVertical(),
+          Container(
+            height: 50,
+            child: AdWidget(
+              key: UniqueKey(),
+              ad: AdMobService.createSettingBannerAd()..load(),
+            ),
+          )
         ],
       ),
     ));
