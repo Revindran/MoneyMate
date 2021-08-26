@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:money_mate/Screens/Pages/analytics_screen.dart';
 import 'package:money_mate/Screens/Pages/notes_screen.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
 import 'package:money_mate/controllers/user_controller.dart';

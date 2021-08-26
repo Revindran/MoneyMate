@@ -1,4 +1,3 @@
-import 'package:animations/animations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,14 +7,12 @@ import 'package:money_mate/Components/circular_menu.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
 import 'package:money_mate/controllers/local_notifications.dart';
 import 'package:money_mate/controllers/user_controller.dart';
-import 'package:money_mate/inocme_expence_chart/monthly_expenses_view.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter/gestures.dart';
 import 'add_transactions.dart';
 import 'analytics_screen.dart';
 import 'notes_screen.dart';
 
-const double _fabDimension = 56;
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {

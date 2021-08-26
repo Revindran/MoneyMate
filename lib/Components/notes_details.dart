@@ -32,6 +32,7 @@ class _NotesDetailsState extends State<NotesDetails> {
   String createdDate;
   String updatedDate;
 
+
   @override
   void initState() {
     super.initState();
