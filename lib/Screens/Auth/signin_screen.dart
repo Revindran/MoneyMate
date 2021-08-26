@@ -13,9 +13,9 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  String _email;
+  late String _email;
 
-  String _password;
+  late String _password;
 
   bool _isLoading = false;
 
@@ -53,7 +53,7 @@ class _SignInPageState extends State<SignInPage> {
                   padding: const EdgeInsets.only(top: 70),
                   child: Text(
                     "Money Mate",
-                    style: Theme.of(context).textTheme.headline4.copyWith(
+                    style: Theme.of(context).textTheme.headline4!.copyWith(
                           fontStyle: FontStyle.italic,
                           fontWeight: FontWeight.bold,
                           color: Colors.grey.shade800,
@@ -62,7 +62,7 @@ class _SignInPageState extends State<SignInPage> {
                 ),
                 Text(
                   "Track Your Money Flow",
-                  style: Theme.of(context).textTheme.headline4.copyWith(
+                  style: Theme.of(context).textTheme.headline4!.copyWith(
                         fontStyle: FontStyle.italic,
                         fontSize: 16,
                         color: Colors.grey.shade800,
@@ -87,7 +87,7 @@ class _SignInPageState extends State<SignInPage> {
                     children: [
                       Text(
                         "Hello",
-                        style: Theme.of(context).textTheme.headline4.copyWith(
+                        style: Theme.of(context).textTheme.headline4!.copyWith(
                               fontWeight: FontWeight.bold,
                               color: Colors.grey.shade800,
                             ),

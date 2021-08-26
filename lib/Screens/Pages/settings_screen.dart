@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:money_mate/Components/balance%20chart.dart';
 import 'package:money_mate/Screens/Auth/reset_password_ui.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
 import 'package:money_mate/Screens/Pages/transaction_history.dart';
@@ -75,24 +74,24 @@ class SettingsPage extends StatelessWidget {
               tag: 'tag',
               child: GetBuilder<UserController>(builder: (_) {
                 return Container(
-                    width: 100.0,
-                    height: 100.0,
-                    decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: new DecorationImage(
-                            fit: BoxFit.contain,
-                            image: _userController.photoUrl.isEmpty
-                                ? AssetImage('assets/user_pic.png')
-                                : NetworkImage(
-                                    _userController.photoUrl.toString()))));
+                  width: 100.0,
+                  height: 100.0,
+                  decoration: new BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: new DecorationImage(
+                      fit: BoxFit.contain,
+                      image: AssetImage('assets/user_pic.png')
+                    ),
+                  ),
+                );
               }),
             ),
           ),
           _sizedBoxVertical(),
           GetBuilder<UserController>(
             builder: (_) => Shimmer.fromColors(
-              baseColor: Colors.grey[900],
-              highlightColor: Colors.grey[200],
+              baseColor: Colors.grey[900] as Color,
+              highlightColor: Colors.grey[200] as Color,
               child: Text('${_userController.name}',
                   style: TextStyle(
                       color: Colors.grey[900], fontWeight: FontWeight.w500)),
@@ -115,9 +114,10 @@ class SettingsPage extends StatelessWidget {
                     fontStyle: FontStyle.italic),
               ),
               Text(
-                "₹" + '${_userController.totalIncome.value - _userController.totalExpanse.value}',
+                "₹" +
+                    '${_userController.totalIncome.value - _userController.totalExpanse.value}',
                 style: TextStyle(
-                    color: _userController.totalIncome.value  >
+                    color: _userController.totalIncome.value >
                             _userController.totalExpanse.value
                         ? Colors.green[500]
                         : Colors.red[400],
@@ -134,7 +134,7 @@ class SettingsPage extends StatelessWidget {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey[200],
+                  color: Colors.grey[200] as Color,
                   blurRadius: 15.0, // soften the shadow
                   spreadRadius: 5.0, //extend the shadow
                   offset: Offset(

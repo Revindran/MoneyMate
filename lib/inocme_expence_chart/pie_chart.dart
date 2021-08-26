@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:money_mate/controllers/user_controller.dart';
 
 class PieChart extends CustomPainter {
-  PieChart({@required this.categories, @required this.width});
+  PieChart({required this.categories, required this.width});
 
   final List<Category> categories;
   final double width;
@@ -31,7 +31,7 @@ class PieChart extends CustomPainter {
       // Amount of length to paint is a percentage of the perimeter of a circle (2 x pi)
       final sweepRadian = currentCategory.amount / total * 2 * pi;
       // Used modulo/remainder to catch use case if there is more than 6 colours
-      paint.color = kNeumorphicColors.elementAt(index % categories.length);
+      paint.color = kNeumorphicColors.elementAt(index % categories.length)!;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
         startRadian,
@@ -55,7 +55,7 @@ class PieChart extends CustomPainter {
 }
 
 class Category {
-  Category(this.name, {@required this.amount});
+  Category(this.name, {required this.amount});
 
   final String name;
   final double amount;

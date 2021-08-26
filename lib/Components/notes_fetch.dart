@@ -9,7 +9,7 @@ import 'open_container_anim.dart';
 
 // ignore: must_be_immutable
 class ShowNotes extends StatelessWidget {
-  String noteText;
+  late String noteText;
   var storage = GetStorage();
   ContainerTransitionType _transitionType = ContainerTransitionType.fade;
 
@@ -37,20 +37,20 @@ class ShowNotes extends StatelessWidget {
               if (querySnapshot.data == null) {
                 return _emptyNotes();
               }
-              if (querySnapshot.data.size == 0) {
+              if (querySnapshot.data!.size == 0) {
                 return _noNotes();
               } else {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: GridView.builder(
-                    itemCount: querySnapshot.data.docs.length,
+                    itemCount: querySnapshot.data!.docs.length,
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10),
                     itemBuilder: (context, index) {
                       final DocumentSnapshot myNotes =
-                          querySnapshot.data.docs[index];
+                          querySnapshot.data!.docs[index];
                       return OpenContainerWrapper(
                         snap: myNotes,
                         transitionType: _transitionType,

@@ -33,7 +33,7 @@ class UserController extends GetxController {
   }
 
   Future<void> sendPasswordResetEmail(BuildContext context,
-      {String email}) async {
+      {required String email}) async {
     try {
       await _auth.sendPasswordResetEmail(email: email);
       Get.snackbar('Resetting Password Email Send',
@@ -44,7 +44,7 @@ class UserController extends GetxController {
           colorText: Get.theme.snackBarTheme.actionTextColor);
       Get.off(() => SignInPage());
     } on FirebaseAuthException catch (error) {
-      Get.snackbar('Error', error.message,
+      Get.snackbar('Error', error.message.toString(),
           snackPosition: SnackPosition.BOTTOM,
           duration: Duration(seconds: 10),
           backgroundColor: Get.theme.snackBarTheme.backgroundColor,
@@ -78,14 +78,14 @@ class UserController extends GetxController {
     update();
   }
 
-  File file;
-  String fileUrl;
-  String fileName;
-  FilePickerResult result;
-  firebase_storage.UploadTask uploadTask;
+  late File file;
+  late String fileUrl;
+  late String fileName;
+  late FilePickerResult result;
+  late firebase_storage.UploadTask uploadTask;
   var fireStore = FirebaseFirestore.instance;
 
-  Reference reference;
+  late Reference reference;
 
   Future getPhotoAndUpload() async {
     var rng = new Random();
@@ -94,10 +94,10 @@ class UserController extends GetxController {
       print(rng.nextInt(100));
       randomName += rng.nextInt(100).toString();
     }
-    result = await FilePicker.platform.pickFiles();
+    result = (await FilePicker.platform.pickFiles())!;
 
     if (result != null) {
-      file = File(result.files.single.path);
+      file = File(result.files.single.path.toString());
     } else {
       // User canceled the picker
     }

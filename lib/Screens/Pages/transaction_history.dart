@@ -38,7 +38,7 @@ class THIstory extends StatelessWidget {
                 child: CupertinoActivityIndicator(),
               );
             }
-            if (querySnapshot.data.size == 0) {
+            if (querySnapshot.data!.size == 0) {
               return _noTransactions();
             } else {
               return ListView.builder(
@@ -46,10 +46,10 @@ class THIstory extends StatelessWidget {
                 physics: const BouncingScrollPhysics(
                     parent: AlwaysScrollableScrollPhysics()),
                 shrinkWrap: true,
-                itemCount: querySnapshot.data.docs.length,
+                itemCount: querySnapshot.data!.docs.length,
                 itemBuilder: (context, index) {
                   final DocumentSnapshot myTransaction =
-                  querySnapshot.data.docs[index];
+                  querySnapshot.data!.docs[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10),

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'notes_details.dart';
 
 class OpenContainerWrapper extends StatelessWidget {
-  const OpenContainerWrapper({this.closedBuilder, this.transitionType, this.snap});
+  const OpenContainerWrapper({required this.closedBuilder, required this.transitionType, required this.snap});
 
   final CloseContainerBuilder closedBuilder;
   final ContainerTransitionType transitionType;

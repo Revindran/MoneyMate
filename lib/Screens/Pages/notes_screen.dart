@@ -4,21 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Components/add_note.dart';
 import 'package:money_mate/Components/notes_fetch.dart';
-import 'package:money_mate/Screens/Pages/home_screen.dart';
-import 'package:get/get.dart';
 
 class NotesPage extends StatefulWidget {
-  const NotesPage({Key key}) : super(key: key);
 
   @override
   _NotesPageState createState() => _NotesPageState();
 }
 
 const double _fabDimension = 56;
-Orientation orientation;
 
 class _NotesPageState extends State<NotesPage> {
-  String noteText;
+  late String noteText;
   var storage = GetStorage();
   ContainerTransitionType _transitionType = ContainerTransitionType.fade;
 
@@ -46,7 +42,7 @@ class _NotesPageState extends State<NotesPage> {
             Radius.circular(_fabDimension / 2),
           ),
         ),
-        closedColor: Colors.amber[200],
+        closedColor: Colors.amber[200] as Color,
         closedBuilder: (context, openContainer) {
           return SizedBox(
             height: _fabDimension,

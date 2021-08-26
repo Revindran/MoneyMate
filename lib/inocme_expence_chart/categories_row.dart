@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:money_mate/inocme_expence_chart/pie_chart.dart';
 
 class CategoriesRow extends StatelessWidget {
-  const CategoriesRow({
-    Key key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -24,13 +20,13 @@ class CategoriesRow extends StatelessWidget {
 
 class ExpenseCategory extends StatelessWidget {
   const ExpenseCategory({
-    Key key,
-    @required this.index,
-    @required this.text,
-  }) : super(key: key);
+    required this.index,
+    required this.text,
+  });
 
   final int index;
   final String text;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -47,10 +43,13 @@ class ExpenseCategory extends StatelessWidget {
             ),
           ),
           SizedBox(width: 20),
-          Text(text.capitalize(),style: TextStyle(
-              color: Colors.grey[500],
-              fontWeight: FontWeight.w500,
-              fontStyle: FontStyle.italic),),
+          Text(
+            text.capitalize(),
+            style: TextStyle(
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic),
+          ),
         ],
       ),
     );

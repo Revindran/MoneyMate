@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Screens/Pages/notes_screen.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
+import 'package:money_mate/controllers/admob_service.dart';
 import 'package:money_mate/controllers/user_controller.dart';
 import 'Screens/OnBoarding/onboarding_screen.dart';
 import 'Screens/Pages/home_screen.dart';
@@ -12,6 +13,7 @@ import 'controllers/local_notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AdMobService.initialize();
   SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent));
   await Firebase.initializeApp();

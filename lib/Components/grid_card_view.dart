@@ -1,19 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'inkwell_overlay.dart';
 
 class GridCardView extends StatelessWidget {
   final DocumentSnapshot snap;
 
-  GridCardView({Key key, @required this.snap, this.openContainer})
-      : super(key: key);
+  GridCardView({required this.snap, required this.openContainer});
+
   final VoidCallback openContainer;
 
   @override
   Widget build(BuildContext context) {
     return InkWellOverlay(
       openContainer: openContainer,
+      width: Get.width,
+      height: Get.height,
       child: new GridTile(
           child: new Column(
         children: [

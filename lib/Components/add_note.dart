@@ -13,8 +13,8 @@ DateTime dateTime = DateTime.now();
 String yyMMdd = dateTime.toIso8601String().split('T').first;
 
 class _AddNotesPageState extends State<AddNotesPage> {
-  String noteText;
-  String titleText;
+  late String noteText;
+  late String titleText;
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
@@ -50,7 +50,7 @@ class _AddNotesPageState extends State<AddNotesPage> {
               decoration: InputDecoration(
                   border: UnderlineInputBorder(), labelText: 'Add Note'),
               validator: (value) {
-                return (value.isEmpty ? 'Please Add some Note to save ' : null);
+                return (value!.isEmpty ? 'Please Add some Note to save ' : null);
               },
               keyboardType: TextInputType.text,
               textCapitalization: TextCapitalization.sentences,
@@ -98,7 +98,7 @@ class _AddNotesPageState extends State<AddNotesPage> {
     };
     FirebaseFirestore.instance
         .collection('Users')
-        .doc(_auth.currentUser.email)
+        .doc(_auth.currentUser!.email)
         .collection("Notes")
         .add(data)
         .then((DocumentReference document) {

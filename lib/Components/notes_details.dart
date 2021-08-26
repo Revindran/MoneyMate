@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 class NotesDetails extends StatefulWidget {
   DocumentSnapshot snapData;
 
-  NotesDetails({Key key, @required this.snapData}) : super(key: key);
+  NotesDetails({required this.snapData});
 
   @override
   _NotesDetailsState createState() => _NotesDetailsState();
@@ -20,18 +20,17 @@ String yyMMdd = dateTime.toIso8601String().split('T').first;
 var fire = FirebaseFirestore.instance;
 var note = fire
     .collection('Users')
-    .doc(FirebaseAuth.instance.currentUser.email)
+    .doc(FirebaseAuth.instance.currentUser!.email)
     .collection('Notes');
 
 class _NotesDetailsState extends State<NotesDetails> {
   bool _isEditingText = false;
-  TextEditingController _titleController, _noteController;
-  String titleText;
-  String noteText;
-  String docID;
-  String createdDate;
-  String updatedDate;
-
+  late TextEditingController _titleController, _noteController;
+  late String titleText;
+  late String noteText;
+  late String docID;
+  late String createdDate;
+  late String updatedDate;
 
   @override
   void initState() {
@@ -82,7 +81,8 @@ class _NotesDetailsState extends State<NotesDetails> {
             ),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: noteText)).then((value) {
-                Get.snackbar('Copied', 'Note copied to clipboard',snackPosition: SnackPosition.BOTTOM);
+                Get.snackbar('Copied', 'Note copied to clipboard',
+                    snackPosition: SnackPosition.BOTTOM);
               });
             },
           )

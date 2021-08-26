@@ -1,18 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:money_mate/Components/circular_menu.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
+import 'package:money_mate/controllers/admob_service.dart';
 import 'package:money_mate/controllers/local_notifications.dart';
 import 'package:money_mate/controllers/user_controller.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter/gestures.dart';
+
 import 'add_transactions.dart';
 import 'analytics_screen.dart';
 import 'notes_screen.dart';
-
 
 // ignore: must_be_immutable
 class HomePage extends StatefulWidget {
@@ -26,11 +28,11 @@ var email = storage.read('email');
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  AnimationController animationController;
-  Animation degOneTranslationAnimation,
+  late AnimationController animationController;
+  late Animation degOneTranslationAnimation,
       degTwoTranslationAnimation,
       degThreeTranslationAnimation;
-  Animation rotationAnimation;
+  late Animation rotationAnimation;
 
   double getRadiansFromDegree(double degree) {
     double unitRadian = 57.295779513;
@@ -107,38 +109,48 @@ class _HomePageState extends State<HomePage>
               _recentTransactions(),
               Expanded(
                 child: StreamBuilder<QuerySnapshot>(
-                    stream: _firStore
-                        .collection('Users')
-                        .doc(email)
-                        .collection('Transactions')
-                        .orderBy("TimeStamp", descending: true)
-                        .snapshots(),
-                    // ignore: missing_return
-                    builder: (BuildContext context,
-                        AsyncSnapshot<QuerySnapshot> querySnapshot) {
-                      if (querySnapshot.hasError)
-                        return Center(child: Text('Has Error'));
-                      if (querySnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        CupertinoActivityIndicator();
-                      }
-                      if (querySnapshot.data == null) {
-                        return Center(
-                          child: CupertinoActivityIndicator(),
-                        );
-                      }
-                      if (querySnapshot.data.size == 0) {
-                        return _noTransactions();
-                      } else {
-                        return ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          physics: const BouncingScrollPhysics(
-                              parent: AlwaysScrollableScrollPhysics()),
-                          shrinkWrap: true,
-                          itemCount: querySnapshot.data.docs.length,
-                          itemBuilder: (context, index) {
+                  stream: _firStore
+                      .collection('Users')
+                      .doc(email)
+                      .collection('Transactions')
+                      .orderBy("TimeStamp", descending: true)
+                      .snapshots(),
+                  // ignore: missing_return
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> querySnapshot) {
+                    List<Object> itemList;
+                    itemList = List.from(querySnapshot.data!.docs);
+                    for (int i = querySnapshot.data!.docs.length - 2;
+                        i >= 1;
+                        i -= 2) {
+                      itemList.insert(i, AdMobService.createBannerAd()..load());
+                    }
+
+                    if (querySnapshot.hasError)
+                      return Center(child: Text('Has Error'));
+                    if (querySnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      CupertinoActivityIndicator();
+                    }
+                    if (querySnapshot.data == null) {
+                      return Center(
+                        child: CupertinoActivityIndicator(),
+                      );
+                    }
+                    if (itemList.length == 0) {
+                      return _noTransactions();
+                    } else {
+                      return ListView.builder(
+                        addAutomaticKeepAlives: true,
+                        scrollDirection: Axis.vertical,
+                        physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics()),
+                        shrinkWrap: true,
+                        itemCount: itemList.length,
+                        itemBuilder: (context, index) {
+                          if (itemList[index] is DocumentSnapshot) {
                             final DocumentSnapshot myTransaction =
-                                querySnapshot.data.docs[index];
+                                itemList[index] as DocumentSnapshot;
                             return Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 10),
@@ -218,10 +230,24 @@ class _HomePageState extends State<HomePage>
                                 ],
                               ),
                             );
-                          },
-                        );
-                      }
-                    }),
+                          } else if (itemList[index] is BannerAd) {
+                            final Container adContainer = Container(
+                              alignment: Alignment.center,
+                              height: 50,
+                              child: AdWidget(
+                                key: UniqueKey(),
+                                ad: itemList[index] as BannerAd,
+                              ),
+                            );
+                            return adContainer;
+                          } else {
+                            return Container();
+                          }
+                        },
+                      );
+                    }
+                  },
+                ),
               ),
             ],
           ),
@@ -337,7 +363,7 @@ class _HomePageState extends State<HomePage>
                         getRadiansFromDegree(rotationAnimation.value)),
                     alignment: Alignment.center,
                     child: CircularButton(
-                      color: Colors.amber[200],
+                      color: Colors.amber[200] as Color,
                       width: 60,
                       height: 60,
                       icon: Icon(
@@ -371,16 +397,16 @@ class _HomePageState extends State<HomePage>
               tag: 'tag',
               child: GetBuilder<UserController>(builder: (_) {
                 return Container(
-                    width: 55.0,
-                    height: 55.0,
-                    decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: new DecorationImage(
-                            fit: BoxFit.cover,
-                            image: _userController.photoUrl.toString().isEmpty
-                                ? AssetImage('assets/user_pic.png')
-                                : NetworkImage(
-                                    _userController.photoUrl.toString()))));
+                  width: 55.0,
+                  height: 55.0,
+                  decoration: new BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: new DecorationImage(
+                      fit: BoxFit.cover,
+                      image: AssetImage('assets/user_pic.png'),
+                    ),
+                  ),
+                );
               }),
             ),
             Padding(
@@ -400,8 +426,8 @@ class _HomePageState extends State<HomePage>
                   ),
                   GetBuilder<UserController>(
                     builder: (_) => Shimmer.fromColors(
-                      baseColor: Colors.grey[900],
-                      highlightColor: Colors.grey[200],
+                      baseColor: Colors.grey[900] as Color,
+                      highlightColor: Colors.grey[200] as Color,
                       child: Text('${_userController.name}',
                           style: TextStyle(
                               color: Colors.grey[900],
@@ -528,7 +554,7 @@ Widget _catHScrolls() {
                 child: Text('Error:|'),
               );
             }
-            if (querySnapshot.data.size == 0) {
+            if (querySnapshot.data!.size == 0) {
               return Center(
                 child: Text(
                   'No Transactions Data Found!',
@@ -544,10 +570,10 @@ Widget _catHScrolls() {
                   physics: const BouncingScrollPhysics(
                       parent: AlwaysScrollableScrollPhysics()),
                   shrinkWrap: true,
-                  itemCount: querySnapshot.data.docs.length,
+                  itemCount: querySnapshot.data!.docs.length,
                   itemBuilder: (context, index) {
                     final DocumentSnapshot myTransaction =
-                        querySnapshot.data.docs[index];
+                        querySnapshot.data!.docs[index];
                     return Row(
                       children: [
                         Container(

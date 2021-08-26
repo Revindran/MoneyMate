@@ -108,20 +108,20 @@ Widget _catHScrolls() {
                 child: Text('Error:|'),
               );
             }
-            if (querySnapshot.data.size == 0) {
+            if (querySnapshot.data!.size == 0) {
               return _noTransactions();
             } else {
               return Container(
                 height: Get.height / 1.8,
                 child: GridView.builder(
-                  itemCount: querySnapshot.data.docs.length,
+                  itemCount: querySnapshot.data!.docs.length,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 4,
                       crossAxisSpacing: 8,
                       mainAxisSpacing: 10),
                   itemBuilder: (context, index) {
                     final DocumentSnapshot myTransaction =
-                        querySnapshot.data.docs[index];
+                        querySnapshot.data!.docs[index];
                     return Container(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -153,7 +153,7 @@ Widget _catHScrolls() {
                             ),
                           ),
                           Text(
-                            "₹ " + myTransaction['Amount'] ?? 'N/A',
+                            "₹ " + myTransaction['Amount'],
                             style: TextStyle(
                                 color: myTransaction['Type'] == 'Income'
                                     ? Colors.green[500]

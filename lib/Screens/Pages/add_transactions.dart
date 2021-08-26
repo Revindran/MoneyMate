@@ -20,7 +20,7 @@ class _AddTransactionsState extends State<AddTransactions> {
   var email;
   var isAlreadyAddedMoney;
   var isAlreadyAddedMoneyEmpty;
-  String itemSelected = "", sDate, selCategory, _dropMemoryDownValue;
+  late String itemSelected = "", sDate, selCategory, _dropMemoryDownValue;
   var selectedItem = 0;
   final _controller = Get.put<CatController>(CatController());
   final amountString = TextEditingController();
@@ -55,7 +55,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                       labelText: 'Enter Amount',
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: Colors.grey[100],
+                          color: Colors.grey[100] as Color,
                         ),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
@@ -70,7 +70,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                       labelText: 'Source',
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
-                          color: Colors.grey[100],
+                          color: Colors.grey[100] as Color,
                         ),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
@@ -119,7 +119,7 @@ class _AddTransactionsState extends State<AddTransactions> {
                             onChanged: (val) {
                               setState(
                                 () {
-                                  _dropMemoryDownValue = val;
+                                  _dropMemoryDownValue = val.toString();
                                 },
                               );
                             },
@@ -261,7 +261,7 @@ class _AddTransactionsState extends State<AddTransactions> {
   }
 
   _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
       // Refer step 1
@@ -382,7 +382,7 @@ class _AddTransactionsState extends State<AddTransactions> {
     });
   }
 
-  void onCange({int s}) {
+  void onCange({required int s}) {
     setState(() {
       selectedItem = s;
     });
