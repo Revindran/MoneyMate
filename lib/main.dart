@@ -35,6 +35,6 @@ void main() async {
       '/notes': (context) => NotesPage(),
       '/settings': (context) => SettingsPage(),
     },
-    home: uMail == null ? OnBoardingPage() : MyStatefulWidget() /*MailLogin()*/,
+    home: uMail == null ? OnBoardingPage() : BottomHomeBar(index: 0,) /*MailLogin()*/,
   ));
 }

@@ -1,10 +1,12 @@
+import 'package:animations/animations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:money_mate/Screens/Pages/settings_screen.dart';
+import 'package:money_mate/Components/bottom_bar.dart';
+import 'package:money_mate/Screens/Pages/add_transactions.dart';
 import 'package:money_mate/controllers/admob_service.dart';
 import 'package:money_mate/controllers/local_notifications.dart';
 import 'package:money_mate/controllers/user_controller.dart';
@@ -19,6 +21,7 @@ class HomePage extends StatefulWidget {
 var storage = GetStorage();
 final _firStore = FirebaseFirestore.instance;
 var email = storage.read('email');
+const double _fabDimension = 56;
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
@@ -32,6 +35,8 @@ class _HomePageState extends State<HomePage>
     double unitRadian = 57.295779513;
     return degree / unitRadian;
   }
+
+  ContainerTransitionType _transitionType = ContainerTransitionType.fade;
 
   @override
   void dispose() {
@@ -86,26 +91,26 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     Size size = MediaQuery.of(context).size;
     return Scaffold(
-        body: Container(
-      width: size.width,
-      height: size.height,
-      child: Stack(
-        children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sizedBoxVertical(),
-              _sizedBoxVertical(),
-              _headerWidget(),
-              _sizedBoxVertical(),
-              _sizedBoxVertical(),
-              _incomeWidget(),
-              _sizedBoxVertical(),
-              _recentTransactions(),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
+      body: Container(
+        width: size.width,
+        height: size.height,
+        child: Stack(
+          children: <Widget>[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _sizedBoxVertical(),
+                _sizedBoxVertical(),
+                _headerWidget(),
+                _sizedBoxVertical(),
+                _sizedBoxVertical(),
+                _incomeWidget(),
+                _sizedBoxVertical(),
+                _recentTransactions(),
+                StreamBuilder<QuerySnapshot>(
                   stream: _firStore
                       .collection('Users')
                       .doc(email)
@@ -137,248 +142,276 @@ class _HomePageState extends State<HomePage>
                     if (itemList.length == 0) {
                       return _noTransactions();
                     } else {
-                      return ListView.builder(
-                        addAutomaticKeepAlives: true,
-                        scrollDirection: Axis.vertical,
-                        physics: const BouncingScrollPhysics(
-                            parent: AlwaysScrollableScrollPhysics()),
-                        shrinkWrap: true,
-                        itemCount: itemList.length,
-                        itemBuilder: (context, index) {
-                          if (itemList[index] is DocumentSnapshot) {
-                            final DocumentSnapshot myTransaction =
-                                itemList[index] as DocumentSnapshot;
-                            return InkWell(
-                              onTap: () => {_service.showInterstitial()},
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        color: myTransaction['Type'] == 'Income'
-                                            ? Colors.green[50]
-                                            : Colors.red[50],
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Image(
-                                              image: AssetImage(
-                                                  "assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),
-                                              width: 30,
-                                              height: 30,
-                                              color: null,
-                                              fit: BoxFit.cover,
-                                              alignment: Alignment.center,
-                                            ),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(myTransaction['SOI'] ??
-                                                    'N/A'),
-                                                Text(myTransaction[
-                                                        'SelectedDate'] ??
-                                                    'N/A'),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                myTransaction['Type'] ==
-                                                        'Income'
-                                                    ? Text(
-                                                        myTransaction[
-                                                                'Amount'] ??
-                                                            'N/A',
-                                                        style: TextStyle(
-                                                            color:
-                                                                Colors.green),
-                                                      )
-                                                    : Text(
-                                                        myTransaction[
-                                                                'Amount'] ??
-                                                            'N/A',
-                                                        style: TextStyle(
-                                                            color: Colors
-                                                                .redAccent),
-                                                      ),
-                                                SizedBox(
-                                                  width: 16,
-                                                ),
-                                                Icon(
-                                                  CupertinoIcons
-                                                      .arrow_turn_down_right,
-                                                  color: Colors.grey[900],
-                                                ),
-                                              ],
-                                            )
-                                          ],
+                      return Expanded(
+                        child: ListView.builder(
+                          addAutomaticKeepAlives: true,
+                          scrollDirection: Axis.vertical,
+                          physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics()),
+                          shrinkWrap: true,
+                          itemCount: itemList.length,
+                          itemBuilder: (context, index) {
+                            if (itemList[index] is DocumentSnapshot) {
+                              final DocumentSnapshot myTransaction =
+                                  itemList[index] as DocumentSnapshot;
+                              return InkWell(
+                                onTap: () => {_service.showInterstitial()},
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          color:
+                                              myTransaction['Type'] == 'Income'
+                                                  ? Colors.green[50]
+                                                  : Colors.red[50],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(16),
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Image(
+                                                image: AssetImage(
+                                                    "assets/${myTransaction['Category'].toString().toLowerCase()}_icon.png"),
+                                                width: 30,
+                                                height: 30,
+                                                color: null,
+                                                fit: BoxFit.cover,
+                                                alignment: Alignment.center,
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(myTransaction['SOI'] ??
+                                                      'N/A'),
+                                                  Text(myTransaction[
+                                                          'SelectedDate'] ??
+                                                      'N/A'),
+                                                ],
+                                              ),
+                                              Row(
+                                                children: [
+                                                  myTransaction['Type'] ==
+                                                          'Income'
+                                                      ? Text(
+                                                          myTransaction[
+                                                                  'Amount'] ??
+                                                              'N/A',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.green),
+                                                        )
+                                                      : Text(
+                                                          myTransaction[
+                                                                  'Amount'] ??
+                                                              'N/A',
+                                                          style: TextStyle(
+                                                              color: Colors
+                                                                  .redAccent),
+                                                        ),
+                                                  SizedBox(
+                                                    width: 16,
+                                                  ),
+                                                  Icon(
+                                                    CupertinoIcons
+                                                        .arrow_turn_down_right,
+                                                    color: Colors.grey[900],
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      height: 10,
-                                    )
-                                  ],
+                                      SizedBox(
+                                        height: 10,
+                                      )
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          } else if (itemList[index] is BannerAd) {
-                            final Container adContainer = Container(
-                              alignment: Alignment.center,
-                              height: 50,
-                              child: AdWidget(
-                                key: UniqueKey(),
-                                ad: itemList[index] as BannerAd,
-                              ),
-                            );
-                            return adContainer;
-                          } else {
-                            return Container();
-                          }
-                        },
+                              );
+                            } else if (itemList[index] is BannerAd) {
+                              final Container adContainer = Container(
+                                alignment: Alignment.center,
+                                height: 50,
+                                child: AdWidget(
+                                  key: UniqueKey(),
+                                  ad: itemList[index] as BannerAd,
+                                ),
+                              );
+                              return adContainer;
+                            } else {
+                              return Container();
+                            }
+                          },
+                        ),
                       );
                     }
                   },
                 ),
-              ),
-            ],
-          ),
-          // Positioned(
-          //     right: 20,
-          //     bottom: 30,
-          //     child: Stack(
-          //       alignment: Alignment.bottomRight,
-          //       children: <Widget>[
-          //         IgnorePointer(
-          //           child: Container(
-          //             color: Colors.transparent,
-          //             height: 150.0,
-          //             width: 150.0,
-          //           ),
-          //         ),
-          //         Transform.translate(
-          //           offset: Offset.fromDirection(getRadiansFromDegree(275),
-          //               degOneTranslationAnimation.value * 100),
-          //           child: Transform(
-          //             transform: Matrix4.rotationZ(
-          //                 getRadiansFromDegree(rotationAnimation.value))
-          //               ..scale(degOneTranslationAnimation.value),
-          //             alignment: Alignment.center,
-          //             child: CircularButton(
-          //               color: Colors.amber,
-          //               width: 50,
-          //               height: 50,
-          //               icon: Icon(
-          //                 CupertinoIcons.add_circled_solid,
-          //                 color: Colors.white,
-          //               ),
-          //               onClick: () => {
-          //                 Get.to(() => AddTransactions()),
-          //                 animationController.reverse()
-          //               },
-          //             ),
-          //           ),
-          //         ),
-          //         Transform.translate(
-          //           offset: Offset.fromDirection(getRadiansFromDegree(240),
-          //               degOneTranslationAnimation.value * 100),
-          //           child: Transform(
-          //             transform: Matrix4.rotationZ(
-          //                 getRadiansFromDegree(rotationAnimation.value))
-          //               ..scale(degOneTranslationAnimation.value),
-          //             alignment: Alignment.center,
-          //             child: CircularButton(
-          //               color: Colors.amber,
-          //               width: 50,
-          //               height: 50,
-          //               icon: Icon(
-          //                 CupertinoIcons.doc,
-          //                 color: Colors.white,
-          //               ),
-          //               onClick: () {
-          //                 Get.to(() => NotesPage());
-          //                 animationController.reverse();
-          //               },
-          //             ),
-          //           ),
-          //         ),
-          //         Transform.translate(
-          //           offset: Offset.fromDirection(getRadiansFromDegree(205),
-          //               degTwoTranslationAnimation.value * 100),
-          //           child: Transform(
-          //             transform: Matrix4.rotationZ(
-          //                 getRadiansFromDegree(rotationAnimation.value))
-          //               ..scale(degTwoTranslationAnimation.value),
-          //             alignment: Alignment.center,
-          //             child: CircularButton(
-          //               color: Colors.amber,
-          //               width: 50,
-          //               height: 50,
-          //               icon: Icon(
-          //                 CupertinoIcons.graph_circle,
-          //                 color: Colors.white,
-          //               ),
-          //               onClick: () {
-          //                 Get.to(() => AnalyticsScreen());
-          //                 animationController.reverse();
-          //               },
-          //             ),
-          //           ),
-          //         ),
-          //         Transform.translate(
-          //           offset: Offset.fromDirection(getRadiansFromDegree(170),
-          //               degThreeTranslationAnimation.value * 100),
-          //           child: Transform(
-          //             transform: Matrix4.rotationZ(
-          //                 getRadiansFromDegree(rotationAnimation.value))
-          //               ..scale(degThreeTranslationAnimation.value),
-          //             alignment: Alignment.center,
-          //             child: CircularButton(
-          //               color: Colors.amber,
-          //               width: 50,
-          //               height: 50,
-          //               icon: Icon(
-          //                 CupertinoIcons.settings,
-          //                 color: Colors.white,
-          //               ),
-          //               onClick: () {
-          //                 Get.to(() => SettingsPage());
-          //                 animationController.reverse();
-          //               },
-          //             ),
-          //           ),
-          //         ),
-          //         Transform(
-          //           transform: Matrix4.rotationZ(
-          //               getRadiansFromDegree(rotationAnimation.value)),
-          //           alignment: Alignment.center,
-          //           child: CircularButton(
-          //               color: Colors.amber,
-          //               width: 60,
-          //               height: 60,
-          //               icon: Icon(
-          //                 Icons.menu,
-          //                 color: Colors.black,
-          //               ),
-          //               onClick: () => click()),
-          //         )
-          //       ],
-          //     ))
-        ],
+              ],
+            ),
+            // Positioned(
+            //     right: 20,
+            //     bottom: 30,
+            //     child: Stack(
+            //       alignment: Alignment.bottomRight,
+            //       children: <Widget>[
+            //         IgnorePointer(
+            //           child: Container(
+            //             color: Colors.transparent,
+            //             height: 150.0,
+            //             width: 150.0,
+            //           ),
+            //         ),
+            //         Transform.translate(
+            //           offset: Offset.fromDirection(getRadiansFromDegree(275),
+            //               degOneTranslationAnimation.value * 100),
+            //           child: Transform(
+            //             transform: Matrix4.rotationZ(
+            //                 getRadiansFromDegree(rotationAnimation.value))
+            //               ..scale(degOneTranslationAnimation.value),
+            //             alignment: Alignment.center,
+            //             child: CircularButton(
+            //               color: Colors.amber,
+            //               width: 50,
+            //               height: 50,
+            //               icon: Icon(
+            //                 CupertinoIcons.add_circled_solid,
+            //                 color: Colors.white,
+            //               ),
+            //               onClick: () => {
+            //                 Get.to(() => AddTransactions()),
+            //                 animationController.reverse()
+            //               },
+            //             ),
+            //           ),
+            //         ),
+            //         Transform.translate(
+            //           offset: Offset.fromDirection(getRadiansFromDegree(240),
+            //               degOneTranslationAnimation.value * 100),
+            //           child: Transform(
+            //             transform: Matrix4.rotationZ(
+            //                 getRadiansFromDegree(rotationAnimation.value))
+            //               ..scale(degOneTranslationAnimation.value),
+            //             alignment: Alignment.center,
+            //             child: CircularButton(
+            //               color: Colors.amber,
+            //               width: 50,
+            //               height: 50,
+            //               icon: Icon(
+            //                 CupertinoIcons.doc,
+            //                 color: Colors.white,
+            //               ),
+            //               onClick: () {
+            //                 Get.to(() => NotesPage());
+            //                 animationController.reverse();
+            //               },
+            //             ),
+            //           ),
+            //         ),
+            //         Transform.translate(
+            //           offset: Offset.fromDirection(getRadiansFromDegree(205),
+            //               degTwoTranslationAnimation.value * 100),
+            //           child: Transform(
+            //             transform: Matrix4.rotationZ(
+            //                 getRadiansFromDegree(rotationAnimation.value))
+            //               ..scale(degTwoTranslationAnimation.value),
+            //             alignment: Alignment.center,
+            //             child: CircularButton(
+            //               color: Colors.amber,
+            //               width: 50,
+            //               height: 50,
+            //               icon: Icon(
+            //                 CupertinoIcons.graph_circle,
+            //                 color: Colors.white,
+            //               ),
+            //               onClick: () {
+            //                 Get.to(() => AnalyticsScreen());
+            //                 animationController.reverse();
+            //               },
+            //             ),
+            //           ),
+            //         ),
+            //         Transform.translate(
+            //           offset: Offset.fromDirection(getRadiansFromDegree(170),
+            //               degThreeTranslationAnimation.value * 100),
+            //           child: Transform(
+            //             transform: Matrix4.rotationZ(
+            //                 getRadiansFromDegree(rotationAnimation.value))
+            //               ..scale(degThreeTranslationAnimation.value),
+            //             alignment: Alignment.center,
+            //             child: CircularButton(
+            //               color: Colors.amber,
+            //               width: 50,
+            //               height: 50,
+            //               icon: Icon(
+            //                 CupertinoIcons.settings,
+            //                 color: Colors.white,
+            //               ),
+            //               onClick: () {
+            //                 Get.to(() => SettingsPage());
+            //                 animationController.reverse();
+            //               },
+            //             ),
+            //           ),
+            //         ),
+            //         Transform(
+            //           transform: Matrix4.rotationZ(
+            //               getRadiansFromDegree(rotationAnimation.value)),
+            //           alignment: Alignment.center,
+            //           child: CircularButton(
+            //               color: Colors.amber,
+            //               width: 60,
+            //               height: 60,
+            //               icon: Icon(
+            //                 Icons.menu,
+            //                 color: Colors.black,
+            //               ),
+            //               onClick: () => click()),
+            //         )
+            //       ],
+            //     ))
+          ],
+        ),
       ),
-    ));
+      floatingActionButton: OpenContainer(
+        transitionType: _transitionType,
+        openBuilder: (context, openContainer) => AddTransactions(),
+        closedElevation: 6,
+        closedShape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(_fabDimension / 2),
+          ),
+        ),
+        closedColor: Colors.amber[200] as Color,
+        closedBuilder: (context, openContainer) {
+          return SizedBox(
+            height: _fabDimension,
+            width: _fabDimension,
+            child: Center(
+              child: Icon(
+                CupertinoIcons.add,
+                color: colorScheme.onSecondary,
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void click() {
@@ -391,7 +424,7 @@ class _HomePageState extends State<HomePage>
 
   Widget _headerWidget() {
     return GestureDetector(
-      onTap: () => Get.to(SettingsPage()),
+      onTap: () => Get.to(BottomHomeBar(index: 3)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(

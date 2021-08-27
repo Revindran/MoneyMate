@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:money_mate/Components/bottom_bar.dart';
 
 class AddNotesPage extends StatefulWidget {
   @override
@@ -23,7 +24,11 @@ class _AddNotesPageState extends State<AddNotesPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text('Add a New Note',style: TextStyle(color: Colors.grey[400],fontStyle: FontStyle.italic),),
+        title: Text(
+          'Add a New Note',
+          style:
+              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
+        ),
         centerTitle: true,
       ),
       body: Column(
@@ -50,7 +55,9 @@ class _AddNotesPageState extends State<AddNotesPage> {
               decoration: InputDecoration(
                   border: UnderlineInputBorder(), labelText: 'Add Note'),
               validator: (value) {
-                return (value!.isEmpty ? 'Please Add some Note to save ' : null);
+                return (value!.isEmpty
+                    ? 'Please Add some Note to save '
+                    : null);
               },
               keyboardType: TextInputType.text,
               textCapitalization: TextCapitalization.sentences,
@@ -66,11 +73,12 @@ class _AddNotesPageState extends State<AddNotesPage> {
               TextButton(
                   onPressed: () {
                     addNote().then((value) {
-                      Get.snackbar(
-                          'The Note has Added successfully..', 'The Note has Added successfully',
+                      Get.snackbar('The Note has Added successfully..',
+                          'The Note has Added successfully',
                           snackPosition: SnackPosition.BOTTOM,
                           duration: Duration(seconds: 3),
-                          backgroundColor: Get.theme.snackBarTheme.backgroundColor,
+                          backgroundColor:
+                              Get.theme.snackBarTheme.backgroundColor,
                           colorText: Get.theme.snackBarTheme.actionTextColor);
                       Navigator.pop(context);
                     });
@@ -101,8 +109,14 @@ class _AddNotesPageState extends State<AddNotesPage> {
         .doc(_auth.currentUser!.email)
         .collection("Notes")
         .add(data)
-        .then((DocumentReference document) {
-      print(document.id);
+        .then((v) {
+      Get.off(() => BottomHomeBar(
+            index: 1,
+          ));
+      noteText = "";
+      titleText = "";
+      Get.snackbar('Added Successful', 'Note Added Successfully',
+          duration: Duration(seconds: 1), snackPosition: SnackPosition.BOTTOM);
     }).catchError((e) {
       print(e);
     });

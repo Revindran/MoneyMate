@@ -23,7 +23,7 @@ class SettingsPage extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(25.0),
+            padding: const EdgeInsets.only(top: 35.0, right: 10.0),
             child: Align(
               alignment: Alignment.topRight,
               child: InkWell(

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:money_mate/Components/bottom_bar.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
 
@@ -219,7 +220,7 @@ class _SignUpPageState extends State<SignUpPage> {
           .then(
         (result) {
           storage.write('email', _email);
-          Get.offAll(() => HomePage());
+          Get.offAll(() => BottomHomeBar(index: 0,));
           firestoreInstance.collection("Users").doc(_email).set(data);
           setState(() {
             _isLoading = false;

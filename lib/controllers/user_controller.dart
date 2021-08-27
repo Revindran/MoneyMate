@@ -10,6 +10,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:money_mate/Components/bottom_bar.dart';
 import 'package:money_mate/Screens/Auth/signin_screen.dart';
 import 'package:money_mate/Screens/Pages/home_screen.dart';
 
@@ -137,7 +138,7 @@ class UserController extends GetxController {
       fireStore.collection('Users').doc(email).update({
         "photoUrl": fileUrl,
       });
-      Get.off(HomePage());
+      Get.off(BottomHomeBar(index: 0,));
     });
   }
 }

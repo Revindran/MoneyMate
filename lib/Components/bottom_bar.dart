@@ -6,18 +6,28 @@ import 'package:money_mate/Screens/Pages/notes_screen.dart';
 import 'package:money_mate/Screens/Pages/settings_screen.dart';
 
 /// This is the stateful widget that the main application instantiates.
-class MyStatefulWidget extends StatefulWidget {
-  const MyStatefulWidget({Key? key}) : super(key: key);
+class BottomHomeBar extends StatefulWidget {
+  final int index;
+
+  BottomHomeBar({required this.index});
 
   @override
-  State<MyStatefulWidget> createState() => _MyStatefulWidgetState();
+  State<BottomHomeBar> createState() => _BottomHomeBarState();
 }
 
 /// This is the private State class that goes with MyStatefulWidget.
-class _MyStatefulWidgetState extends State<MyStatefulWidget> {
-  int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+class _BottomHomeBarState extends State<BottomHomeBar> {
+  late int i;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    i = widget.index;
+    _selectedIndex = i;
+  }
+
+
   List<Widget> _widgetOptions = [
     HomePage(),
     NotesPage(),

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:money_mate/Components/validator.dart';
-import 'package:money_mate/Screens/Pages/home_screen.dart';
 import 'package:money_mate/controllers/category_controller.dart';
 
 class AddTransactions extends StatefulWidget {
@@ -27,10 +26,17 @@ class _AddTransactionsState extends State<AddTransactions> {
   final sofIncome = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _dropMemoryDownValue = "";
+  }
+
+  @override
   Widget build(BuildContext context) {
     email = storage.read('email');
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         elevation: 0,
         backgroundColor: Colors.transparent,
         centerTitle: true,
@@ -368,10 +374,17 @@ class _AddTransactionsState extends State<AddTransactions> {
       setState(() {
         isLoading = false;
       });
-      _dropMemoryDownValue == 'Income' ? incomeGraph() : expenseGraph();
-      Get.off(() => HomePage());
-      Get.snackbar('Upload Successful', 'Upload Successful',
-          duration: Duration(seconds: 2), snackPosition: SnackPosition.BOTTOM);
+      _dropMemoryDownValue == 'Income'
+          ? incomeGraph().then((value) {
+              Get.snackbar('Upload Successful', 'Upload Successful',
+                  duration: Duration(seconds: 2),
+                  snackPosition: SnackPosition.BOTTOM);
+            })
+          : expenseGraph().then((value) {
+              Get.snackbar('Upload Successful', 'Upload Successful',
+                  duration: Duration(seconds: 2),
+                  snackPosition: SnackPosition.BOTTOM);
+            });
     }).catchError((e) {
       setState(() {
         isLoading = false;
@@ -404,7 +417,13 @@ class _AddTransactionsState extends State<AddTransactions> {
         .doc(email)
         .collection("IncomeGraph")
         .doc(_controller.catList[selectedItem].title.toString())
-        .set(data);
+        .set(data)
+        .then((value) {
+      amountString.text = "";
+      sofIncome.text = "";
+      _controller.catList[selectedItem] = _controller.catList[0];
+      _dropMemoryDownValue = "";
+    });
   }
 
   Future<void> expenseGraph() async {
@@ -421,7 +440,13 @@ class _AddTransactionsState extends State<AddTransactions> {
         .doc(email)
         .collection("ExpenseGraph")
         .doc(_controller.catList[selectedItem].title.toString())
-        .set(data);
+        .set(data)
+        .then((value) {
+      amountString.text = "";
+      sofIncome.text = "";
+      _controller.catList[selectedItem] = _controller.catList[0];
+      _dropMemoryDownValue = "";
+    });
   }
 
   isAlreadyAdded(String collection, String category) {

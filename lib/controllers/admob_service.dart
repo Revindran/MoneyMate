@@ -3,16 +3,32 @@ import 'dart:io';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdMobService {
+
+  //Real
+  // static String get bannerAdUnitId => Platform.isAndroid
+  //     ? 'ca-app-pub-9877340673993645/3844079616'
+  //     : 'ca-app-pub-3940256099942544/6300978111';
+  //
+  // static String get settingBannerAdUnitId => Platform.isAndroid
+  //     ? 'ca-app-pub-9877340673993645/2072080366'
+  //     : 'ca-app-pub-3940256099942544/6300978111';
+  //
+  // static String get interstitialUnitId => Platform.isAndroid
+  //     ? 'ca-app-pub-9877340673993645/5616094775'
+  //     : 'ca-app-pub-3940256099942544/1033173712';
+
+
+  //test
   static String get bannerAdUnitId => Platform.isAndroid
-      ? 'ca-app-pub-9877340673993645/3844079616'
+      ? 'ca-app-pub-3940256099942544/6300978111'
       : 'ca-app-pub-3940256099942544/6300978111';
 
   static String get settingBannerAdUnitId => Platform.isAndroid
-      ? 'ca-app-pub-9877340673993645/2072080366'
+      ? 'ca-app-pub-3940256099942544/6300978111'
       : 'ca-app-pub-3940256099942544/6300978111';
 
   static String get interstitialUnitId => Platform.isAndroid
-      ? 'ca-app-pub-9877340673993645/5616094775'
+      ? 'ca-app-pub-3940256099942544/1033173712'
       : 'ca-app-pub-3940256099942544/1033173712';
 
   static String get interstitialNoteUnitId => Platform.isAndroid

@@ -6,10 +6,9 @@ import 'inkwell_overlay.dart';
 
 class GridCardView extends StatelessWidget {
   final DocumentSnapshot snap;
+  final VoidCallback openContainer;
 
   GridCardView({required this.snap, required this.openContainer});
-
-  final VoidCallback openContainer;
 
   @override
   Widget build(BuildContext context) {
