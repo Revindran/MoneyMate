@@ -104,21 +104,19 @@ class _AddNotesPageState extends State<AddNotesPage> {
       "updated": "",
       "timeStamp": Timestamp.now(),
     };
-    FirebaseFirestore.instance
-        .collection('Users')
-        .doc(_auth.currentUser!.email)
-        .collection("Notes")
-        .add(data)
-        .then((v) {
-      Get.off(() => BottomHomeBar(
-            index: 1,
-          ));
-      noteText = "";
-      titleText = "";
+    try {
+      FirebaseFirestore.instance
+          .collection('Users')
+          .doc(_auth.currentUser!.email)
+          .collection("Notes")
+          .add(data);
+      Get.off(() => BottomHomeBar(index: 1));
       Get.snackbar('Added Successful', 'Note Added Successfully',
-          duration: Duration(seconds: 1), snackPosition: SnackPosition.BOTTOM);
-    }).catchError((e) {
+          duration: Duration(seconds: 1), snackPosition: SnackPosition.TOP);
+    } catch (e) {
       print(e);
-    });
+      Get.snackbar('Error', 'Error',
+          duration: Duration(seconds: 1), snackPosition: SnackPosition.TOP);
+    }
   }
 }

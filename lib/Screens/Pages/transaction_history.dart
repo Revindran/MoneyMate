@@ -146,16 +146,11 @@ Widget _noTransactions() {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              "assets/no_transactions.gif",
+            Image(
+              image: AssetImage('assets/empty_notes.png'),
             ),
             Text(
               'No Transactions Found in your History',
-              style:
-              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
-            ),
-            Text(
-              'Try create one and Save Money',
               style:
               TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
             ),

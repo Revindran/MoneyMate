@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:money_mate/controllers/admob_service.dart';
 import 'package:money_mate/inocme_expence_chart/categories_row.dart';
 import 'package:money_mate/inocme_expence_chart/pie_chart_view.dart';
 
@@ -59,8 +61,14 @@ class AnalyticsScreen extends StatelessWidget {
             ),
           ),
           _sizedBoxVertical(),
-          _sizedBoxVertical(),
           _catHScrolls(),
+          Container(
+            height: 100,
+            child: AdWidget(
+              key: UniqueKey(),
+              ad: AdMobService.createBannerAd()..load(),
+            ),
+          ),
         ],
       ),
     );
@@ -182,16 +190,11 @@ Widget _noTransactions() {
         child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset(
-          "assets/no_transactions.gif",
+        Image(
+          image: AssetImage('assets/empty_notes.png'),
         ),
         Text(
           'No Transactions Found in your History',
-          style:
-              TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
-        ),
-        Text(
-          'Try create one and Save Money',
           style:
               TextStyle(color: Colors.grey[400], fontStyle: FontStyle.italic),
         ),
