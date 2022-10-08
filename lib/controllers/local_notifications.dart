@@ -45,13 +45,9 @@ class LocalNotificationsController extends GetxController {
     AndroidInitializationSettings androidInitializationSettings =
         AndroidInitializationSettings("ic_launcher");
 
-    IOSInitializationSettings iosInitializationSettings =
-        IOSInitializationSettings();
-
     final InitializationSettings initializationSettings =
         InitializationSettings(
-            android: androidInitializationSettings,
-            iOS: iosInitializationSettings);
+            android: androidInitializationSettings, iOS: null);
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
@@ -64,12 +60,13 @@ class LocalNotificationsController extends GetxController {
 
   //Instant Notifications
   Future instantNofitication() async {
-    var android = AndroidNotificationDetails("id", "channel", "description",
-        importance: Importance.max, priority: Priority.high, ticker: 'ticker');
+    var android = AndroidNotificationDetails("id", "channel",
+        channelDescription: "description",
+        importance: Importance.max,
+        priority: Priority.high,
+        ticker: 'ticker');
 
-    var ios = IOSNotificationDetails();
-
-    var platform = new NotificationDetails(android: android, iOS: ios);
+    var platform = new NotificationDetails(android: android);
 
     await _flutterLocalNotificationsPlugin.show(
         0, "Demo instant notification", "Tap to do something", platform,
@@ -86,8 +83,8 @@ class LocalNotificationsController extends GetxController {
         htmlFormatContent: true,
         htmlFormatContentTitle: true);
 
-    var android = AndroidNotificationDetails("id", "channel", "description",
-        styleInformation: bigPicture);
+    var android = AndroidNotificationDetails("id", "channel",
+        channelDescription: "description", styleInformation: bigPicture);
 
     var platform = new NotificationDetails(android: android);
 
@@ -96,10 +93,11 @@ class LocalNotificationsController extends GetxController {
         payload: "Welcome to demo app");
   }
 
-  //Stylish Notification
+  // Stylish Notification
   Future stylishNotification(
       RxInt totalIncome, RxInt totalExpanse, RxInt totalBalance) async {
-    var android = AndroidNotificationDetails("id", "channel", "description",
+    var android = AndroidNotificationDetails("id", "channel",
+        channelDescription: "description",
         importance: Importance.max,
         priority: Priority.high,
         ticker: 'ticker',
@@ -132,7 +130,8 @@ class LocalNotificationsController extends GetxController {
         htmlFormatContent: true,
         htmlFormatContentTitle: true);
 
-    var android = AndroidNotificationDetails("id", "channel", "description",
+    var android = AndroidNotificationDetails("id", "channel",
+        channelDescription: "description",
         importance: Importance.max,
         priority: Priority.high,
         playSound: true,
@@ -148,7 +147,7 @@ class LocalNotificationsController extends GetxController {
         platform);
   }
 
-  //Cancel notification
+  // Cancel notification
 
   Future cancelNotification() async {
     await _flutterLocalNotificationsPlugin.cancelAll();
@@ -165,10 +164,9 @@ class LocalNotificationsController extends GetxController {
         'I Hope you Having an Amazing day❤.Have you done Any Transactions Today? Note it now!',
         nextInstanceOfTenAM(),
         const NotificationDetails(
-          android: AndroidNotificationDetails(
-              'daily notification channel id',
+          android: AndroidNotificationDetails('daily notification channel id',
               'daily notification channel name',
-              'daily notification description',
+              channelDescription: 'daily notification description',
               importance: Importance.max,
               priority: Priority.high,
               ticker: 'ticker',
@@ -189,7 +187,7 @@ class LocalNotificationsController extends GetxController {
   tz.TZDateTime nextInstanceOfTenAM() {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
     tz.TZDateTime scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, 15,30);
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, 15, 30);
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
